@@ -11,7 +11,7 @@ public class Role {
     private Long roleId;
 
     @Column(unique = true, nullable = false)
-    private String roleName;   // PERSONAL, BUSINESS, ADMIN
+    private String roleName;   
 
 	public Long getRoleId() {
 		return roleId;
@@ -29,7 +29,7 @@ public class Role {
 		this.roleName = roleName;
 	}
 
-    // getters setters
+ 
     
     
 }

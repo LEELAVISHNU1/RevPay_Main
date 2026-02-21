@@ -2,7 +2,7 @@ package com.revpay.dto.request;
 
 public class LoginRequest {
 
-    private String username; // email or phone
+    private String username; 
     private String password;
 	public String getUsername() {
 		return username;
