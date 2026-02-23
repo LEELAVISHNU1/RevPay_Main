@@ -4,7 +4,7 @@ import com.revpay.dto.response.ApiResponse;
 import com.revpay.entity.Notification;
 import com.revpay.service.interfaces.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,17 +16,16 @@ public class NotificationController {
     @Autowired
     private NotificationService notificationService;
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
-    public ResponseEntity<ApiResponse<List<Notification>>> myNotifications() {
+    public ApiResponse<?> myNotifications(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
 
-        List<Notification> notifications = notificationService.myNotifications();
-
-        return ResponseEntity.ok(
-                new ApiResponse<>(
-                        true,
-                        "Notifications fetched successfully",
-                        notifications
-                )
+        return new ApiResponse<>(
+                true,
+                "Notifications fetched",
+                notificationService.myNotifications(page, size)
         );
     }
 }
