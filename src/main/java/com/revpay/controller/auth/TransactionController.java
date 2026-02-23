@@ -1,4 +1,4 @@
-package com.revpay.controller.transaction;
+package com.revpay.controller.auth;
 
 import com.revpay.dto.response.ApiResponse;
 import com.revpay.entity.Transaction;
