@@ -4,7 +4,7 @@ import com.revpay.dto.response.ApiResponse;
 import com.revpay.entity.Loan;
 import com.revpay.service.interfaces.LoanService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,46 +17,38 @@ public class LoanController {
     @Autowired
     private LoanService loanService;
 
+    // PERSONAL can apply loan
+    @PreAuthorize("hasRole('PERSONAL')")
     @PostMapping("/apply")
-    public ResponseEntity<ApiResponse<Void>> apply(@RequestBody Map<String, String> body) {
-
+    public ApiResponse<?> apply(@RequestBody Map<String,String> body) {
         loanService.applyLoan(
                 Double.valueOf(body.get("amount")),
                 Integer.parseInt(body.get("months"))
         );
-
-        return ResponseEntity.ok(
-                new ApiResponse<>(true, "Loan applied successfully", null)
-        );
+        return new ApiResponse<>(true, "Loan applied", null);
     }
 
+    // ADMIN approves
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/approve/{id}")
-    public ResponseEntity<ApiResponse<Void>> approve(@PathVariable Long id) {
-
+    public ApiResponse<?> approve(@PathVariable Long id) {
         loanService.approveLoan(id);
-
-        return ResponseEntity.ok(
-                new ApiResponse<>(true, "Loan approved & credited", null)
-        );
+        return new ApiResponse<>(true, "Loan approved", null);
     }
 
+    // PERSONAL repays EMI
+    @PreAuthorize("hasRole('PERSONAL')")
     @PostMapping("/repay/{id}")
-    public ResponseEntity<ApiResponse<Void>> repay(@PathVariable Long id) {
-
+    public ApiResponse<?> repay(@PathVariable Long id) {
         loanService.repayEmi(id);
-
-        return ResponseEntity.ok(
-                new ApiResponse<>(true, "EMI paid successfully", null)
-        );
+        return new ApiResponse<>(true, "EMI paid", null);
     }
 
+    // Any logged in user
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
-    public ResponseEntity<ApiResponse<List<Loan>>> myLoans() {
-
+    public ApiResponse<?> myLoans() {
         List<Loan> loans = loanService.myLoans();
-
-        return ResponseEntity.ok(
-                new ApiResponse<>(true, "Loans fetched successfully", loans)
-        );
+        return new ApiResponse<>(true, "Loans fetched successfully", loans);
     }
 }
