@@ -1,8 +1,10 @@
 package com.revpay.controller.paymentmethod;
 
+import com.revpay.dto.response.ApiResponse;
 import com.revpay.entity.PaymentMethod;
 import com.revpay.service.interfaces.PaymentMethodService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,7 +18,7 @@ public class PaymentMethodController {
     private PaymentMethodService paymentMethodService;
 
     @PostMapping("/add")
-    public String addCard(@RequestBody Map<String,String> body) {
+    public ResponseEntity<ApiResponse<Void>> addCard(@RequestBody Map<String, String> body) {
 
         paymentMethodService.addCard(
                 body.get("number"),
@@ -25,17 +27,28 @@ public class PaymentMethodController {
                 body.get("cvv")
         );
 
-        return "Card added successfully";
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "Card added successfully", null)
+        );
     }
 
     @GetMapping
-    public List<PaymentMethod> myCards() {
-        return paymentMethodService.myCards();
+    public ResponseEntity<ApiResponse<List<PaymentMethod>>> myCards() {
+
+        List<PaymentMethod> cards = paymentMethodService.myCards();
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "Payment methods fetched successfully", cards)
+        );
     }
 
     @DeleteMapping("/{id}")
-    public String delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+
         paymentMethodService.deleteCard(id);
-        return "Card removed";
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "Card removed successfully", null)
+        );
     }
 }

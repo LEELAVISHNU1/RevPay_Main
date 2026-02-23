@@ -1,8 +1,10 @@
 package com.revpay.controller.invoice;
 
+import com.revpay.dto.response.ApiResponse;
 import com.revpay.entity.Invoice;
 import com.revpay.service.interfaces.InvoiceService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -17,7 +19,7 @@ public class InvoiceController {
     private InvoiceService invoiceService;
 
     @PostMapping("/create")
-    public String create(@RequestBody Map<String,String> body) {
+    public ResponseEntity<ApiResponse<Void>> create(@RequestBody Map<String, String> body) {
 
         invoiceService.createInvoice(
                 body.get("customerEmail"),
@@ -26,17 +28,28 @@ public class InvoiceController {
                 LocalDate.parse(body.get("dueDate"))
         );
 
-        return "Invoice created";
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "Invoice created successfully", null)
+        );
     }
 
     @GetMapping("/received")
-    public List<Invoice> received() {
-        return invoiceService.myReceivedInvoices();
+    public ResponseEntity<ApiResponse<List<Invoice>>> received() {
+
+        List<Invoice> invoices = invoiceService.myReceivedInvoices();
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "Received invoices fetched successfully", invoices)
+        );
     }
 
     @PostMapping("/pay/{id}")
-    public String pay(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> pay(@PathVariable Long id) {
+
         invoiceService.payInvoice(id);
-        return "Invoice paid";
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "Invoice paid successfully", null)
+        );
     }
 }
