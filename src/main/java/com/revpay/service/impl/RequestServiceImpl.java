@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
 
 import com.revpay.entity.MoneyRequest;
 import com.revpay.entity.User;
@@ -14,6 +14,8 @@ import com.revpay.repository.UserRepository;
 import com.revpay.service.interfaces.RequestService;
 import com.revpay.service.interfaces.UserService;
 import com.revpay.service.interfaces.WalletService;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class RequestServiceImpl implements RequestService {

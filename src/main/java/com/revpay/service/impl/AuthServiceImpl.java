@@ -35,8 +35,10 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+    
     @Autowired
     private WalletService walletService;
+
     
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -61,7 +63,7 @@ public class AuthServiceImpl implements AuthService {
         user.setCreatedAt(LocalDateTime.now());
 
         userRepository.save(user);
-        walletService.createWalletForUser(user);
+        walletService.createWallet(user);
     }
 
 //    @Override

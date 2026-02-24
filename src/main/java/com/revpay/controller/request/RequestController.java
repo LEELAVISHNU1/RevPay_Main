@@ -4,47 +4,46 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
+import com.revpay.dto.response.ApiResponse;
 import com.revpay.entity.MoneyRequest;
 import com.revpay.service.interfaces.RequestService;
 
 @RestController
 @RequestMapping("/api/requests")
+@PreAuthorize("hasRole('PERSONAL')")
 public class RequestController {
 
-    @Autowired private RequestService requestService;
+    @Autowired
+    private RequestService requestService;
 
     @PostMapping("/create")
-    public String create(@RequestBody Map<String,Object> body) {
-
+    public ApiResponse<?> create(@RequestBody Map<String,Object> body) {
         requestService.createRequest(
                 body.get("email").toString(),
                 Double.valueOf(body.get("amount").toString()),
                 body.get("note").toString()
         );
-        return "Request sent";
+        return new ApiResponse<>(true, "Request sent", null);
     }
 
     @GetMapping("/incoming")
-    public List<MoneyRequest> incoming() {
-        return requestService.myIncomingRequests();
+    public ApiResponse<?> incoming() {
+        List<MoneyRequest> requests = requestService.myIncomingRequests();
+        return new ApiResponse<>(true, "Incoming requests fetched", requests);
     }
 
     @PostMapping("/accept/{id}")
-    public String accept(@PathVariable Long id) {
+    public ApiResponse<?> accept(@PathVariable Long id) {
         requestService.acceptRequest(id);
-        return "Request accepted";
+        return new ApiResponse<>(true, "Request accepted", null);
     }
 
     @PostMapping("/decline/{id}")
-    public String decline(@PathVariable Long id) {
+    public ApiResponse<?> decline(@PathVariable Long id) {
         requestService.declineRequest(id);
-        return "Request declined";
+        return new ApiResponse<>(true, "Request declined", null);
     }
 }

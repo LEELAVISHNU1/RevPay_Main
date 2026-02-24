@@ -1,14 +1,7 @@
 package com.revpay.entity;
 
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "wallets")
@@ -19,12 +12,12 @@ public class Wallet {
     private Long walletId;
 
     @OneToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", unique = true)
     private User user;
 
     private Double balance;
 
-    private String walletStatus;
+    private String status; // ACTIVE / BLOCKED
 
     private LocalDateTime updatedAt;
 
@@ -52,12 +45,12 @@ public class Wallet {
 		this.balance = balance;
 	}
 
-	public String getWalletStatus() {
-		return walletStatus;
+	public String getStatus() {
+		return status;
 	}
 
-	public void setWalletStatus(String walletStatus) {
-		this.walletStatus = walletStatus;
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 	public LocalDateTime getUpdatedAt() {
@@ -67,6 +60,8 @@ public class Wallet {
 	public void setUpdatedAt(LocalDateTime updatedAt) {
 		this.updatedAt = updatedAt;
 	}
+
+    // getters & setters
     
     
 }

@@ -1,26 +1,23 @@
 package com.revpay.service.impl;
 
-import java.time.LocalDateTime;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
+import com.revpay.entity.PaymentMethod;
 import com.revpay.entity.Transaction;
 import com.revpay.entity.User;
 import com.revpay.entity.Wallet;
+import com.revpay.repository.PaymentMethodRepository;
 import com.revpay.repository.TransactionRepository;
 import com.revpay.repository.UserRepository;
 import com.revpay.repository.WalletRepository;
-import com.revpay.security.CustomUserDetails;
 import com.revpay.service.interfaces.NotificationService;
 import com.revpay.service.interfaces.UserService;
 import com.revpay.service.interfaces.WalletService;
-import com.revpay.entity.PaymentMethod;
-import com.revpay.repository.PaymentMethodRepository;
 
+import jakarta.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 @Service
 public class WalletServiceImpl implements WalletService {
@@ -29,52 +26,42 @@ public class WalletServiceImpl implements WalletService {
     private WalletRepository walletRepository;
 
     @Autowired
-    private TransactionRepository transactionRepository;
-
-    @Autowired
     private UserService userService;
 
+    @Autowired
+    private TransactionRepository transactionRepository;
     
     @Autowired
     private UserRepository userRepository;
-    
+
+
     @Autowired
     private PaymentMethodRepository paymentMethodRepository;
-
+    
     @Autowired
     private NotificationService notificationService;
 
+   
     @Override
-    public void createWalletForUser(User user) {
+    public void createWallet(User user) {
 
         Wallet wallet = new Wallet();
         wallet.setUser(user);
         wallet.setBalance(0.0);
-        wallet.setWalletStatus("ACTIVE");
+        wallet.setStatus("ACTIVE");
         wallet.setUpdatedAt(LocalDateTime.now());
 
         walletRepository.save(wallet);
     }
 
     @Override
-    public Wallet getCurrentUserWallet() {
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
-
-        return walletRepository.findByUser(userDetails.getUser())
-                .orElseThrow(() -> new RuntimeException("Wallet not found"));
-    }
-
-    @Override
-    public Wallet getWalletOfCurrentUser() {
+    public Wallet getMyWallet() {
 
         User user = userService.getCurrentUser();
 
         return walletRepository.findByUser(user)
                 .orElseThrow(() -> new RuntimeException("Wallet not found"));
     }
-
     
     @Override
     public void addMoney(Double amount) {
@@ -82,7 +69,7 @@ public class WalletServiceImpl implements WalletService {
         if (amount == null || amount <= 0)
             throw new RuntimeException("Invalid amount");
 
-        Wallet wallet = getWalletOfCurrentUser();
+        Wallet wallet = getMyWallet();
 
         double newBalance = wallet.getBalance() + amount;
         wallet.setBalance(newBalance);
@@ -90,18 +77,17 @@ public class WalletServiceImpl implements WalletService {
 
         walletRepository.save(wallet);
 
-        
+        // ⭐ create transaction record
         Transaction txn = new Transaction();
         txn.setWallet(wallet);
         txn.setAmount(amount);
-        txn.setTxnType("ADD_MONEY"); 
+        txn.setTxnType("ADD_MONEY");
         txn.setBalanceAfterTxn(newBalance);
         txn.setCreatedAt(LocalDateTime.now());
         txn.setRemark("Money added to wallet");
 
         transactionRepository.save(txn);
     }
-
     
     @Override
     @Transactional
@@ -126,14 +112,14 @@ public class WalletServiceImpl implements WalletService {
         if (senderWallet.getBalance() < amount)
             throw new RuntimeException("Insufficient balance");
 
-       
+        // update balances
         senderWallet.setBalance(senderWallet.getBalance() - amount);
         receiverWallet.setBalance(receiverWallet.getBalance() + amount);
 
         walletRepository.save(senderWallet);
         walletRepository.save(receiverWallet);
 
-        
+        // sender transaction
         Transaction sendTxn = new Transaction();
         sendTxn.setWallet(senderWallet);
         sendTxn.setAmount(amount);
@@ -143,7 +129,7 @@ public class WalletServiceImpl implements WalletService {
         sendTxn.setRemark("Sent to " + receiverEmail + " : " + remark);
         transactionRepository.save(sendTxn);
 
-      
+        // receiver transaction
         Transaction receiveTxn = new Transaction();
         receiveTxn.setWallet(receiverWallet);
         receiveTxn.setAmount(amount);
@@ -196,13 +182,6 @@ public class WalletServiceImpl implements WalletService {
     }
 
     @Override
-	public Wallet getMyWallet() {
-
-		User user = userService.getCurrentUser();
-
-		return walletRepository.findByUser(user).orElseThrow(() -> new RuntimeException("Wallet not found"));
-	}
-    @Override
     public void creditUser(User user, Double amount, String remark) {
 
         Wallet wallet = walletRepository.findByUser(user)
@@ -253,5 +232,5 @@ public class WalletServiceImpl implements WalletService {
         transactionRepository.save(txn);
     }
 
-	
+
 }
