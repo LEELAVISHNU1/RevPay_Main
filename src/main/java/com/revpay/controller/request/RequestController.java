@@ -4,12 +4,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.revpay.dto.response.ApiResponse;
 import com.revpay.entity.MoneyRequest;
 import com.revpay.service.interfaces.RequestService;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/requests")
@@ -31,7 +31,7 @@ public class RequestController {
 
     @GetMapping("/incoming")
     public ApiResponse<?> incoming() {
-        List<MoneyRequest> requests = requestService.myIncomingRequests();
+        List<MoneyRequest> requests = requestService.getIncomingRequests();
         return new ApiResponse<>(true, "Incoming requests fetched", requests);
     }
 
@@ -43,7 +43,7 @@ public class RequestController {
 
     @PostMapping("/decline/{id}")
     public ApiResponse<?> decline(@PathVariable Long id) {
-        requestService.declineRequest(id);
+        requestService.rejectRequest(id);
         return new ApiResponse<>(true, "Request declined", null);
     }
 }

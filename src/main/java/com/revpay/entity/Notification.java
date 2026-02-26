@@ -35,7 +35,7 @@ public class Notification {
     public void setMessage(String message) { this.message = message; }
 
     public boolean isRead() { return isRead; }
-    public void setRead(boolean read) { isRead = read; }
+    public void setIsRead(boolean read) { isRead = read; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

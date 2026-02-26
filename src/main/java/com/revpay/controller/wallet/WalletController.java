@@ -8,10 +8,10 @@ import com.revpay.entity.Wallet;
 import com.revpay.service.interfaces.WalletService;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/wallet")
@@ -37,7 +37,14 @@ public class WalletController {
 
     @PostMapping("/add-money")
     public ApiResponse<?> addMoney(@RequestBody AddMoneyRequest request) {
-        walletService.addMoney(request.getAmount());
+
+        walletService.addMoney(
+                request.getAmount(),
+                request.getRemark() == null || request.getRemark().isBlank()
+                        ? "Wallet Deposit"
+                        : request.getRemark()
+        );
+
         Wallet wallet = walletService.getMyWallet();
 
         return new ApiResponse<>(
@@ -49,11 +56,14 @@ public class WalletController {
 
     @PostMapping("/send")
     public ApiResponse<?> sendMoney(@RequestBody SendMoneyRequest request) {
+
         walletService.sendMoney(
                 request.getReceiverEmail(),
                 request.getAmount(),
-                request.getRemark()
+                request.getRemark(),
+                request.getPin()   // assuming SendMoneyRequest has PIN
         );
+
         return new ApiResponse<>(true, "Transfer successful", null);
     }
 

@@ -50,6 +50,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void register(RegisterRequest request) {
 
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new RuntimeException("Email already registered");
+        }
+
         Role role = roleRepository.findByRoleName(request.getRole())
                 .orElseThrow(() -> new RuntimeException("Role not found"));
 
@@ -57,10 +61,27 @@ public class AuthServiceImpl implements AuthService {
         user.setFullName(request.getFullName());
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
+
+        // 🔐 Encode Password
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        // 🔐 Encode Transaction PIN  ✅ ADD THIS LINE
+       
+
         user.setRole(role);
+        user.setTransactionPin(passwordEncoder.encode(request.getTransactionPin())); // ✅ ADD THIS
+        user.setFavoriteColor(request.getFavoriteColor());
         user.setAccountStatus("ACTIVE");
         user.setCreatedAt(LocalDateTime.now());
+        
+        if (userRepository.existsByPhone(user.getPhone())) {
+            throw new RuntimeException("Phone number already registered");
+        }
+
+        if (userRepository.existsByEmail(user.getEmail())) {
+            throw new RuntimeException("Email already registered");
+        }
+
 
         userRepository.save(user);
         walletService.createWallet(user);
@@ -84,4 +105,3 @@ public class AuthServiceImpl implements AuthService {
 //    }
 
 }
-

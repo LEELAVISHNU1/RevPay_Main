@@ -7,25 +7,25 @@ import java.time.LocalDateTime;
 @Table(name = "money_requests")
 public class MoneyRequest {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long requestId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long requestId;
 
-    @ManyToOne
-    @JoinColumn(name = "sender_id") // person who will pay
-    private User sender;
+	@ManyToOne
+	@JoinColumn(name = "sender_id") // person who will pay
+	private User sender;
 
-    @ManyToOne
-    @JoinColumn(name = "receiver_id") // person requesting
-    private User receiver;
+	@ManyToOne
+	@JoinColumn(name = "receiver_id") // person requesting
+	private User receiver;
 
-    private Double amount;
+	private Double amount;
 
-    private String status; // PENDING ACCEPTED DECLINED
+	private String status; // PENDING ACCEPTED DECLINED
 
-    private String note;
+	private String note;
 
-    private LocalDateTime createdAt;
+	private LocalDateTime createdAt;
 
 	public Long getRequestId() {
 		return requestId;
@@ -82,6 +82,7 @@ public class MoneyRequest {
 	public void setCreatedAt(LocalDateTime createdAt) {
 		this.createdAt = createdAt;
 	}
-    
+
+	// getters setters
 
 }

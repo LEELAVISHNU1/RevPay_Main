@@ -2,7 +2,14 @@ package com.revpay.entity;
 
 import java.time.LocalDateTime;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "users")
@@ -14,15 +21,25 @@ public class User {
 
     private String fullName;
 
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String email;
 
     @Column(unique = true)
     private String phone;
 
     private String password;
-
+    
+    @Column(nullable = false)
     private String transactionPin;
+    
+    public String getTransactionPin() {
+        return transactionPin;
+    }
+
+    public void setTransactionPin(String transactionPin) {
+        this.transactionPin = transactionPin;
+    }
+    	
 
     private String accountStatus;
 
@@ -31,6 +48,17 @@ public class User {
     @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;
+    
+    @Column(nullable = false)
+    private String favoriteColor;
+
+    public String getFavoriteColor() {
+        return favoriteColor;
+    }
+
+    public void setFavoriteColor(String favoriteColor) {
+        this.favoriteColor = favoriteColor;
+    }
 
 	public Long getUserId() {
 		return userId;
@@ -72,13 +100,7 @@ public class User {
 		this.password = password;
 	}
 
-	public String getTransactionPin() {
-		return transactionPin;
-	}
-
-	public void setTransactionPin(String transactionPin) {
-		this.transactionPin = transactionPin;
-	}
+	
 
 	public String getAccountStatus() {
 		return accountStatus;
@@ -106,4 +128,3 @@ public class User {
     
     
 }
-

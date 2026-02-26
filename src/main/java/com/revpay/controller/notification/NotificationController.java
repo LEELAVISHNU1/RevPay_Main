@@ -16,6 +16,13 @@ public class NotificationController {
     @Autowired
     private NotificationService notificationService;
 
+    
+//    @GetMapping
+//    public ApiResponse<?> myNotifications() {
+//        List<Notification> notifications = notificationService.myNotifications();
+//        return new ApiResponse<>(true, "Notifications fetched successfully", notifications);
+//    }
+    
     @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ApiResponse<?> myNotifications(
@@ -27,5 +34,11 @@ public class NotificationController {
                 "Notifications fetched",
                 notificationService.myNotifications(page, size)
         );
+    }
+    
+    @PostMapping("/notifications/clear")
+    public String clearAllNotifications() {
+        notificationService.deleteAllNotifications();
+        return "redirect:/notifications";
     }
 }

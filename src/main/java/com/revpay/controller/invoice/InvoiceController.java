@@ -4,7 +4,7 @@ import com.revpay.dto.response.ApiResponse;
 import com.revpay.entity.Invoice;
 import com.revpay.service.interfaces.InvoiceService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -18,8 +18,10 @@ public class InvoiceController {
     @Autowired
     private InvoiceService invoiceService;
 
+    // BUSINESS creates invoices
+    @PreAuthorize("hasRole('BUSINESS')")
     @PostMapping("/create")
-    public ResponseEntity<ApiResponse<Void>> create(@RequestBody Map<String, String> body) {
+    public ApiResponse<?> create(@RequestBody Map<String, String> body) {
 
         invoiceService.createInvoice(
                 body.get("customerEmail"),
@@ -28,28 +30,28 @@ public class InvoiceController {
                 LocalDate.parse(body.get("dueDate"))
         );
 
-        return ResponseEntity.ok(
-                new ApiResponse<>(true, "Invoice created successfully", null)
-        );
+        return new ApiResponse<>(true, "Invoice created", null);
     }
 
+    // PERSONAL views received invoices
+    @PreAuthorize("hasRole('PERSONAL')")
     @GetMapping("/received")
-    public ResponseEntity<ApiResponse<List<Invoice>>> received() {
-
+    public ApiResponse<?> received() {
         List<Invoice> invoices = invoiceService.myReceivedInvoices();
 
-        return ResponseEntity.ok(
-                new ApiResponse<>(true, "Received invoices fetched successfully", invoices)
+        return new ApiResponse<>(
+                true,
+                "Received invoices fetched successfully",
+                invoices
         );
     }
 
+    // PERSONAL pays invoice
+    @PreAuthorize("hasRole('PERSONAL')")
     @PostMapping("/pay/{id}")
-    public ResponseEntity<ApiResponse<Void>> pay(@PathVariable Long id) {
-
+    public ApiResponse<?> pay(@PathVariable Long id) {
         invoiceService.payInvoice(id);
 
-        return ResponseEntity.ok(
-                new ApiResponse<>(true, "Invoice paid successfully", null)
-        );
+        return new ApiResponse<>(true, "Invoice paid", null);
     }
 }

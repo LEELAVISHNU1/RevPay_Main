@@ -1,90 +1,125 @@
 package com.revpay.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
-import org.springframework.data.domain.Sort;
 
 import com.revpay.dto.response.PageResponse;
 import com.revpay.entity.Transaction;
+import com.revpay.entity.User;
 import com.revpay.entity.Wallet;
 import com.revpay.repository.TransactionRepository;
+import com.revpay.repository.WalletRepository;
 import com.revpay.service.interfaces.TransactionService;
-import com.revpay.service.interfaces.WalletService;
-import java.time.LocalDateTime;
-import java.time.LocalDate;
+import com.revpay.service.interfaces.UserService;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Service
-public class TransactionServiceImpl implements TransactionService{
-	
-	@Autowired
-	private WalletService walletService;
-	
-	@Autowired
-	private TransactionRepository transactionRepository;
+public class TransactionServiceImpl implements TransactionService {
 
-	@Override
-	public PageResponse<?> myTransactions(int page, int size) {
+    @Autowired
+    private WalletRepository walletRepository;
 
-	    Wallet wallet = walletService.getMyWallet();
+    @Autowired
+    private TransactionRepository transactionRepository;
 
-	    Pageable pageable = PageRequest.of(page, size);
+    @Autowired
+    private UserService userService;
 
-	    Page<Transaction> transactionPage =
-	            transactionRepository.findByWalletOrderByCreatedAtDesc(wallet, pageable);
+    // ================= MY TRANSACTIONS =================
+    @Override
+    public PageResponse<?> myTransactions(int page, int size) {
 
-	    return new PageResponse<>(
-	            transactionPage.getContent(),
-	            transactionPage.getNumber(),
-	            transactionPage.getTotalPages(),
-	            transactionPage.getTotalElements()
-	    );
-	}
-	
-	@Override
-	public PageResponse<?> searchTransactions(
-	        int page,
-	        int size,
-	        String type,
-	        String from,
-	        String to,
-	        String sort) {
+        User currentUser = userService.getCurrentUser();
 
-	    Wallet wallet = walletService.getMyWallet();
+        Wallet wallet = walletRepository.findByUser(currentUser)
+                .orElseThrow(() -> new RuntimeException("Wallet not found"));
 
-	    // sorting
-	    Sort sorting = Sort.by("createdAt").descending();
-	    if (sort != null) {
-	        String[] parts = sort.split(",");
-	        sorting = Sort.by(Sort.Direction.fromString(parts[1]), parts[0]);
-	    }
+        Pageable pageable = PageRequest.of(page, size);
 
-	    Pageable pageable = PageRequest.of(page, size, sorting);
+        Page<Transaction> transactionPage =
+                transactionRepository.findByWalletOrderByCreatedAtDesc(wallet, pageable);
 
-	    // date parsing
-	    LocalDateTime fromDate = null;
-	    LocalDateTime toDate = null;
+        return new PageResponse<>(
+                transactionPage.getContent(),
+                transactionPage.getNumber(),
+                transactionPage.getTotalPages(),
+                transactionPage.getTotalElements()
+        );
+    }
 
-	    if (from != null)
-	        fromDate = LocalDate.parse(from).atStartOfDay();
+    // ================= SEARCH TRANSACTIONS =================
+    @Override
+    public PageResponse<?> searchTransactions(
+            int page,
+            int size,
+            String type,
+            String from,
+            String to,
+            String sort) {
 
-	    if (to != null)
-	        toDate = LocalDate.parse(to).atTime(23,59,59);
+        User currentUser = userService.getCurrentUser();
 
-	    Page<Transaction> result =
-	            transactionRepository.searchTransactions(
-	                    wallet, type, fromDate, toDate, pageable
-	            );
+        Wallet wallet = walletRepository.findByUser(currentUser)
+                .orElseThrow(() -> new RuntimeException("Wallet not found"));
 
-	    return new PageResponse<>(
-	            result.getContent(),
-	            result.getNumber(),
-	            result.getTotalPages(),
-	            result.getTotalElements()
-	    );
-	}
+        // Sorting
+        Sort sorting = Sort.by("createdAt").descending();
+        if (sort != null && sort.contains(",")) {
+            String[] parts = sort.split(",");
+            sorting = Sort.by(Sort.Direction.fromString(parts[1]), parts[0]);
+        }
 
+        Pageable pageable = PageRequest.of(page, size, sorting);
+
+        // Date parsing
+        LocalDateTime fromDate = null;
+        LocalDateTime toDate = null;
+
+        if (from != null && !from.isEmpty())
+            fromDate = LocalDate.parse(from).atStartOfDay();
+
+        if (to != null && !to.isEmpty())
+            toDate = LocalDate.parse(to).atTime(23, 59, 59);
+
+        Page<Transaction> result =
+                transactionRepository.searchTransactions(
+                        wallet, type, fromDate, toDate, pageable
+                );
+
+        return new PageResponse<>(
+                result.getContent(),
+                result.getNumber(),
+                result.getTotalPages(),
+                result.getTotalElements()
+        );
+    }
+
+    // ================= CREATE TRANSACTION =================
+    @Override
+    public void createTransaction(User user, Double amount, String description) {
+
+        Wallet wallet = walletRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("Wallet not found"));
+
+        Transaction t = new Transaction();
+
+        t.setWallet(wallet);
+        t.setAmount(amount);
+
+        // Auto set type
+        if (amount < 0) {
+            t.setTxnType("SEND");
+        } else {
+            t.setTxnType("RECEIVE");
+        }
+
+        t.setBalanceAfterTxn(wallet.getBalance());
+        t.setRemark(description);
+        t.setCreatedAt(LocalDateTime.now());
+
+        transactionRepository.save(t);
+    }
 }

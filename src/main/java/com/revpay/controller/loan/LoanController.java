@@ -18,15 +18,15 @@ public class LoanController {
     private LoanService loanService;
 
     // PERSONAL can apply loan
-    @PreAuthorize("hasRole('PERSONAL')")
-    @PostMapping("/apply")
-    public ApiResponse<?> apply(@RequestBody Map<String,String> body) {
-        loanService.applyLoan(
-                Double.valueOf(body.get("amount")),
-                Integer.parseInt(body.get("months"))
-        );
-        return new ApiResponse<>(true, "Loan applied", null);
-    }
+//    @PreAuthorize("hasRole('PERSONAL')")
+//    @PostMapping("/apply")
+//    public ApiResponse<?> apply(@RequestBody Map<String,String> body) {
+//        loanService.applyLoan(
+//                Double.valueOf(body.get("amount")),
+//                Integer.parseInt(body.get("months"))
+//        );
+//        return new ApiResponse<>(true, "Loan applied", null);
+//    }
 
     // ADMIN approves
     @PreAuthorize("hasRole('ADMIN')")

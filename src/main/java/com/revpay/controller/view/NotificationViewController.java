@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller; // Use @Controller, NOT @RestController
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class NotificationViewController {
@@ -20,16 +21,20 @@ public class NotificationViewController {
 	@GetMapping("/notifications")
 	public String viewNotifications(Model model) {
 
-	    // 1️⃣ Get unread notifications ONLY
+	    // Get ALL notifications (not only unread)
 	    List<Notification> notifications =
-	            notificationService.getUnreadNotifications();
+	            notificationService.getAllNotifications();
 
-	    // 2️⃣ Mark them as read
+	    // Mark unread ones as read
 	    notificationService.markAllAsRead();
 
 	    model.addAttribute("notifications", notifications);
-
 	    return "notifications";
 	}
-
+	
+	@PostMapping("/notifications/clear")
+	public String clearNotifications() {
+	    notificationService.clearAllNotifications();
+	    return "redirect:/notifications";
+	}
 }

@@ -30,7 +30,7 @@ public class AuthViewController {
 	                    Model model) {
 
 	    if (result.hasErrors()) {
-	        return "login";  
+	        return "login";   // ⭐ VERY IMPORTANT
 	    }
 
 	    try {
@@ -47,7 +47,7 @@ public class AuthViewController {
 
 	    } catch (BadCredentialsException e) {
 	        model.addAttribute("error", "Invalid email or password");
-	        return "login";  
+	        return "login";   // ⭐ DO NOT redirect
 	    }
 	}
 

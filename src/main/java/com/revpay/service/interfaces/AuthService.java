@@ -6,7 +6,7 @@ import com.revpay.entity.User;
 
 public interface AuthService {
 
-    void register(RegisterRequest request);
+	void register(RegisterRequest request);
 
-
+//	User login(LoginRequest request);
 }

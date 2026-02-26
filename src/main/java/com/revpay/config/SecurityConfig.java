@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -28,6 +29,11 @@ import org.springframework.security.config.annotation.authentication.configurati
 @EnableMethodSecurity
 public class SecurityConfig {
 
+//    private final JwtAuthFilter jwtAuthFilter;
+//
+//    SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+//        this.jwtAuthFilter = jwtAuthFilter;
+//    }
 	@Autowired
 	private JwtAuthFilter jwtAuthFilter;
 
@@ -58,6 +64,19 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
 
+            // ⭐ Browser login
+//            .formLogin(form -> form
+//                .loginPage("/login")
+//                .loginProcessingUrl("/do-login")
+//                .defaultSuccessUrl("/dashboard", true)
+//                .permitAll()
+//            )
+//            
+//            .formLogin(form -> form
+//            	    .loginPage("/login")
+//            	    .loginProcessingUrl("/login")   // same as controller
+//            	    .permitAll()
+//            	)
             
             .formLogin(form -> form
             	    .loginPage("/login")

@@ -5,8 +5,16 @@ public class SendMoneyRequest {
     private String receiverEmail;
     private Double amount;
     private String remark;
+    
+    private String pin; 
 
-    public String getReceiverEmail() { return receiverEmail; }
+    public String getPin() {
+		return pin;
+	}
+	public void setPin(String pin) {
+		this.pin = pin;
+	}
+	public String getReceiverEmail() { return receiverEmail; }
     public void setReceiverEmail(String receiverEmail) { this.receiverEmail = receiverEmail; }
 
     public Double getAmount() { return amount; }

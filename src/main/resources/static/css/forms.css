@@ -1,0 +1,22 @@
+/* Base styles for all Fintech forms */
+body {
+    font-family: 'Inter', sans-serif;
+    background: radial-gradient(circle at top right, #eef2ff, #f9fafb);
+    min-height: 100vh;
+}
+
+/* Custom focus ring for all inputs and selects */
+input:focus, select:focus {
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+    outline: none;
+}
+
+/* Custom styling for the Select dropdown icon */
+select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.75rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+    appearance: none; /* Removes default browser arrow */
+}

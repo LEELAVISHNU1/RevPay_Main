@@ -25,10 +25,32 @@ public class Loan {
     private String status; // PENDING APPROVED REJECTED CLOSED
 
     private LocalDateTime createdAt;
+    
+    private String documentName;
+    private String documentType;
+    private String documentPath;
 
     // getters setters
 
-    public Long getLoanId() { return loanId; }
+    public String getDocumentName() {
+		return documentName;
+	}
+	public void setDocumentName(String documentName) {
+		this.documentName = documentName;
+	}
+	public String getDocumentType() {
+		return documentType;
+	}
+	public void setDocumentType(String documentType) {
+		this.documentType = documentType;
+	}
+	public String getDocumentPath() {
+		return documentPath;
+	}
+	public void setDocumentPath(String documentPath) {
+		this.documentPath = documentPath;
+	}
+	public Long getLoanId() { return loanId; }
     public void setLoanId(Long loanId) { this.loanId = loanId; }
 
     public User getUser() { return user; }

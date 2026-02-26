@@ -16,7 +16,6 @@ public class SecurityUtil {
         if (auth == null || !auth.isAuthenticated())
             return null;
 
-        return auth.getName(); 
+        return auth.getName(); // email (username)
     }
 }
-

@@ -11,6 +11,10 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+
 @Service
 public class PaymentMethodServiceImpl implements PaymentMethodService {
 
@@ -23,15 +27,44 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
     @Override
     public void addCard(String number, String holder, String expiry, String cvv) {
 
-        User user = userService.getCurrentUser();
+        // 1️⃣ Card number validation (16 digits)
+        if (!number.matches("\\d{16}"))
+            throw new RuntimeException("Invalid card number");
 
+        // 2️⃣ CVV validation (3 digits)
+        if (!cvv.matches("\\d{3}"))
+            throw new RuntimeException("Invalid CVV");
+
+        // 3️⃣ Expiry format validation (MM/YY)
+        if (!expiry.matches("(0[1-9]|1[0-2])/\\d{2}"))
+            throw new RuntimeException("Invalid expiry format MM/YY");
+
+        // 4️⃣ Holder validation
+        if (holder == null || holder.isBlank())
+            throw new RuntimeException("Card holder name required");
+
+        // 5️⃣ Expiry date must not be in the past
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/yy");
+            YearMonth expiryDate = YearMonth.parse(expiry, formatter);
+            YearMonth currentMonth = YearMonth.now();
+
+            if (expiryDate.isBefore(currentMonth)) {
+                throw new RuntimeException("Card expiry date cannot be in the past");
+            }
+
+        } catch (DateTimeParseException e) {
+            throw new RuntimeException("Invalid expiry format MM/YY");
+        }
+
+        // 6️⃣ Save card if everything is valid
         PaymentMethod card = new PaymentMethod();
-        card.setUser(user);
+        card.setUser(userService.getCurrentUser());
         card.setCardNumber(number);
         card.setCardHolderName(holder);
         card.setExpiry(expiry);
         card.setCvv(cvv);
-        card.setDefault(false);
+        card.setAvailableBalance(50000.0); // simulated bank balance
         card.setCreatedAt(LocalDateTime.now());
 
         paymentMethodRepository.save(card);
@@ -44,6 +77,15 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
 
     @Override
     public void deleteCard(Long id) {
-        paymentMethodRepository.deleteById(id);
+
+        User user = userService.getCurrentUser();
+
+        PaymentMethod card = paymentMethodRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Card not found"));
+
+        if(!card.getUser().getUserId().equals(user.getUserId()))
+            throw new RuntimeException("Unauthorized");
+
+        paymentMethodRepository.delete(card);
     }
 }

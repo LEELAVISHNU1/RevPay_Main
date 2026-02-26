@@ -12,4 +12,14 @@ public interface NotificationService {
     List<Notification> myNotifications();
     
     PageResponse<?> myNotifications(int page, int size);
+    
+    void markAllAsRead();
+    
+    List<Notification> getUnreadNotifications();
+    
+    List<Notification> getAllNotifications();
+    void deleteAllNotifications();
+    
+    void clearAllNotifications() ;
+    
 }

@@ -6,32 +6,73 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
+
 <body class="bg-gray-50 font-['Inter']">
-    <div class="flex h-screen">
-        <main class="flex-1 p-8 overflow-y-auto">
-            <div class="max-w-4xl mx-auto">
-                <div class="flex items-center justify-between mb-8">
-                    <h1 class="text-2xl font-bold">Notifications</h1>
-                    <a href="/dashboard" class="text-indigo-600 hover:underline text-sm">Back to Dashboard</a>
-                </div>
+<div class="flex h-screen">
+    <main class="flex-1 p-8 overflow-y-auto">
+        <div class="max-w-4xl mx-auto">
 
-                <div th:if="${#lists.isEmpty(notifications)}" class="bg-white p-10 text-center rounded-xl shadow-sm border border-gray-100">
-                    <p class="text-gray-400">No notifications yet.</p>
-                </div>
+            <!-- HEADER -->
+            <div class="flex items-center justify-between mb-8">
+                <h1 class="text-2xl font-bold">Notifications</h1>
 
-                <div class="space-y-4">
-                    <div th:each="n : ${notifications}" 
-                         class="p-5 rounded-xl border transition shadow-sm"
-                         th:classappend="${n.isRead ? 'bg-white border-gray-100 opacity-80' : 'bg-indigo-50 border-indigo-100'}">
-                        <div class="flex justify-between">
-                            <h3 class="font-bold text-gray-900" th:text="${n.title}">Title</h3>
-                            <span class="text-xs text-gray-400" th:text="${#temporals.format(n.createdAt, 'dd MMM, HH:mm')}">Time</span>
-                        </div>
-                        <p class="text-sm text-gray-600 mt-1" th:text="${n.message}">Message body...</p>
-                    </div>
+                <div class="flex items-center gap-6">
+                    <a href="/dashboard"
+                       class="text-indigo-600 hover:underline text-sm font-semibold">
+                        Back to Dashboard
+                    </a>
+
+					<form th:action="@{/notifications/clear}" method="post"
+					      th:if="${not #lists.isEmpty(notifications)}">
+					    <button type="submit"
+					            class="text-sm text-red-500 hover:text-red-700 font-semibold transition">
+					        Clear All
+					    </button>
+					</form>
                 </div>
             </div>
-        </main>
-    </div>
+
+            <!-- EMPTY STATE -->
+            <div th:if="${#lists.isEmpty(notifications)}"
+                 class="bg-white p-12 text-center rounded-xl shadow-sm border border-gray-100">
+                <p class="text-gray-400 text-lg">No notifications yet.</p>
+            </div>
+
+            <!-- NOTIFICATION LIST -->
+            <div class="space-y-4">
+
+                <div th:each="n : ${notifications}"
+                     class="p-5 rounded-xl border transition-all shadow-sm"
+                     th:classappend="${n.read} ? ' bg-white border-gray-100 opacity-80' : ' bg-indigo-50 border-indigo-200'">
+
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-bold text-gray-900"
+                                th:text="${n.title}">Title</h3>
+
+                            <p class="text-sm text-gray-600 mt-1"
+                               th:text="${n.message}">Message body...</p>
+                        </div>
+
+                        <span class="text-xs text-gray-400 whitespace-nowrap ml-4"
+                              th:text="${#temporals.format(n.createdAt, 'dd MMM yyyy, HH:mm')}">
+                            Time
+                        </span>
+                    </div>
+
+                    <!-- New Badge -->
+                    <div th:if="${!n.read}" class="mt-2">
+                        <span class="text-[10px] font-bold uppercase text-indigo-600">
+                            New
+                        </span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+</div>
 </body>
 </html>

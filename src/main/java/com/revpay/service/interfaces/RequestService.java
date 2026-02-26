@@ -1,7 +1,6 @@
 package com.revpay.service.interfaces;
 
 import java.util.List;
-
 import com.revpay.entity.MoneyRequest;
 
 public interface RequestService {
@@ -10,7 +9,9 @@ public interface RequestService {
 
     void acceptRequest(Long requestId);
 
-    void declineRequest(Long requestId);
+    void rejectRequest(Long requestId);
 
-    List<MoneyRequest> myIncomingRequests();
+    List<MoneyRequest> getIncomingRequests();
+
+    List<MoneyRequest> mySentRequests();
 }
