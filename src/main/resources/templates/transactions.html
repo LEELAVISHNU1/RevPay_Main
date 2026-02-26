@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Statement - RevPay</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" th:href="@{/css/forms.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen p-4 md:p-8">
+
+<div class="max-w-5xl mx-auto">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <div>
+            <h2 class="text-3xl font-bold text-gray-900 tracking-tight">
+                Transaction Statement
+            </h2>
+            <p class="text-gray-500 mt-1">
+                View and filter your complete transaction history.
+            </p>
+        </div>
+        <a href="/dashboard"
+           class="inline-flex items-center px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition shadow-sm">
+            &larr; Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8">
+        <form method="get" action="/transactions"
+              class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+
+            <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                    Transaction Type
+                </label>
+                <select name="type"
+                        class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-white text-sm transition">
+                    <option value="">All Transactions</option>
+                    <option value="SEND">Send Money</option>
+                    <option value="RECEIVE">Receive Money</option>
+                    <option value="CARD_DEPOSIT">Card Deposit</option>
+                    <option value="EMI_PAYMENT">EMI Payment</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                    From Date
+                </label>
+                <input type="date" name="from"
+                       class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm transition">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                    To Date
+                </label>
+                <!-- FIXED TYPO HERE -->
+                <input type="date" name="to"
+                       class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm transition">
+            </div>
+
+            <button type="submit"
+                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl transition shadow-lg shadow-indigo-100">
+                Apply Filters
+            </button>
+        </form>
+    </div>
+
+    <!-- Transactions Table -->
+    <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                <tr class="bg-indigo-900 text-white">
+                    <th class="p-5 font-semibold text-sm uppercase tracking-wider">Type</th>
+                    <th class="p-5 font-semibold text-sm uppercase tracking-wider">Amount</th>
+                    <th class="p-5 font-semibold text-sm uppercase tracking-wider text-right">Date & Time</th>
+                </tr>
+                </thead>
+
+                <tbody class="divide-y divide-gray-100">
+
+                <tr th:each="t : ${txns}" class="hover:bg-gray-50 transition-colors">
+
+                    <!-- TYPE -->
+                    <td class="p-5">
+                        <div class="flex items-center gap-3">
+                            <div class="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold"
+                                 th:classappend="${t.amount > 0 ? 
+                                     'bg-green-100 text-green-700' : 
+                                     'bg-red-100 text-red-700'}">
+                                <span th:text="${#strings.substring(t.txnType, 0, 1)}">T</span>
+                            </div>
+
+                            <span class="font-semibold text-gray-800"
+                                  th:text="${t.txnType}">
+                                TYPE
+                            </span>
+                        </div>
+                    </td>
+
+                    <!-- AMOUNT (FULLY FIXED) -->
+                    <td class="p-5">
+                        <span class="text-lg font-bold"
+                              th:classappend="${t.amount > 0 ? 
+                                  'text-green-600' : 
+                                  'text-red-600'}"
+                              th:text="${t.amount > 0 
+                                  ? '+ ₹' + #numbers.formatDecimal(t.amount,1,2)
+                                  : '- ₹' + #numbers.formatDecimal(-t.amount,1,2)}">
+                            ₹0.00
+                        </span>
+                    </td>
+
+                    <!-- DATE -->
+                    <td class="p-5 text-right text-gray-500 text-sm font-medium">
+                        <span th:text="${#temporals.format(t.createdAt, 'dd MMM yyyy, hh:mm a')}">
+                            Date
+                        </span>
+                    </td>
+
+                </tr>
+
+                <!-- EMPTY STATE -->
+                <tr th:if="${#lists.isEmpty(txns)}">
+                    <td colspan="3" class="p-20 text-center text-gray-400">
+                        <p class="text-lg font-medium">No transactions found.</p>
+                        <p class="text-sm">Try adjusting your filters or date range.</p>
+                    </td>
+                </tr>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-8 flex items-center justify-between">
+        <p class="text-sm text-gray-500">
+            Page <span class="font-bold text-gray-900"
+                        th:text="${currentPage + 1}">1</span>
+            of <span th:text="${totalPages}">1</span>
+        </p>
+
+        <div class="flex gap-2">
+            <a th:if="${currentPage > 0}"
+               th:href="@{/transactions(page=${currentPage-1}, type=${param.type}, from=${param.from}, to=${param.to})}"
+               class="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 transition shadow-sm">
+                Previous
+            </a>
+
+            <a th:if="${currentPage + 1 < totalPages}"
+               th:href="@{/transactions(page=${currentPage+1}, type=${param.type}, from=${param.from}, to=${param.to})}"
+               class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-100">
+                Next
+            </a>
+        </div>
+    </div>
+
+</div>
+
+<script th:src="@{/js/validation.js}"></script>
+</body>
+</html>
