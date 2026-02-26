@@ -1,0 +1,597 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RevPay Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #4338ca;
+        border-radius: 10px;
+      }
+    </style>
+  </head>
+
+  <body class="bg-gray-50 text-gray-800">
+    <div class="flex h-screen overflow-hidden">
+      <aside class="w-64 bg-indigo-900 text-white flex-shrink-0 flex flex-col">
+        <div
+          class="p-6 text-2xl font-bold border-b border-indigo-800 tracking-tight"
+        >
+          RevPay
+        </div>
+        <nav class="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
+          <p class="text-xs font-semibold text-indigo-300 uppercase px-2 mb-2">
+            Main Menu
+          </p>
+          <a
+            href="/dashboard"
+            class="block p-3 rounded-lg bg-indigo-800 hover:bg-indigo-700 transition"
+            >Dashboard</a
+          >
+
+          <div sec:authorize="hasAnyRole('PERSONAL','BUSINESS')">
+            <a
+              href="/wallet/add"
+              class="block p-3 rounded-lg hover:bg-indigo-700 transition text-sm"
+              >Add Money</a
+            >
+            <a
+              href="/send"
+              class="block p-3 rounded-lg hover:bg-indigo-700 transition text-sm"
+              >Send Money</a
+            >
+            <a
+              href="/request"
+              class="block p-3 rounded-lg hover:bg-indigo-700 transition text-sm"
+              >Request Money</a
+            >
+            <a
+              href="/requests"
+              class="block p-3 rounded-lg hover:bg-indigo-700 transition text-sm"
+              >View Requests</a
+            >
+            <a
+              href="/cards"
+              class="block p-3 rounded-lg hover:bg-indigo-700 transition text-sm"
+              >My Cards</a
+            >
+            <a
+              href="/transactions"
+              class="block p-3 rounded-lg hover:bg-indigo-700 transition text-sm"
+              >Statement</a
+            >
+            <a
+              href="/invoices"
+              class="block p-3 rounded-lg hover:bg-indigo-700 transition text-sm"
+              >View My Invoices</a
+            >
+          </div>
+
+          <div sec:authorize="hasRole('BUSINESS')">
+            <p
+              class="text-xs font-semibold text-indigo-300 uppercase px-2 mt-6 mb-2"
+            >
+              Business Operations
+            </p>
+            <a
+              href="/invoice/create"
+              class="block p-3 rounded-lg hover:bg-indigo-700 transition text-sm"
+              >Create Invoice</a
+            >
+            <a
+              href="/loan/apply"
+              class="block p-3 rounded-lg hover:bg-indigo-700 transition text-sm"
+              >Apply Business Loan</a
+            >
+          </div>
+
+          <div sec:authorize="hasRole('ADMIN')">
+            <p
+              class="text-xs font-semibold text-indigo-300 uppercase px-2 mt-6 mb-2"
+            >
+              Administration
+            </p>
+            <a
+              href="/loan/admin"
+              class="block p-3 rounded-lg hover:bg-indigo-700 transition text-sm"
+              >Loan Approval Panel</a
+            >
+          </div>
+        </nav>
+        <div class="p-4 border-t border-indigo-800">
+          <a
+            href="/logout"
+            class="flex items-center gap-2 p-3 text-red-300 hover:text-red-100 transition text-sm"
+          >
+            <span>Logout</span>
+          </a>
+        </div>
+      </aside>
+
+      <main class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+        <header class="flex justify-between items-start mb-8">
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900">
+              Welcome, <span th:text="${name}">User</span>
+            </h1>
+            <p class="text-gray-500 text-sm">
+              Manage your finances and transactions.
+            </p>
+          </div>
+          <div class="flex items-center gap-6">
+            <a
+              href="/notifications"
+              class="relative p-2 text-gray-400 hover:text-indigo-600 transition"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                />
+              </svg>
+              <span
+                th:if="${not #lists.isEmpty(notifications)}"
+                class="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full bg-red-500 border-2 border-white"
+              ></span>
+            </a>
+
+            <div class="text-right">
+              <span
+                class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold uppercase"
+                sec:authentication="authorities"
+                >Role</span
+              >
+              <p class="text-xs text-gray-400 mt-1" sec:authentication="name">
+                user@email.com
+              </p>
+            </div>
+          </div>
+        </header>
+
+        <div
+          th:if="${success}"
+          class="mb-6 p-4 bg-green-50 border-l-4 border-green-500 text-green-700 rounded shadow-sm"
+          th:text="${success}"
+        ></div>
+        <div
+          th:if="${error}"
+          class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded shadow-sm"
+          th:text="${error}"
+        ></div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div
+            class="bg-gradient-to-br from-indigo-600 to-indigo-800 p-6 rounded-2xl shadow-lg text-white"
+          >
+            <p
+              class="text-indigo-200 text-xs font-semibold uppercase tracking-wider"
+            >
+              Wallet Balance
+            </p>
+            <h2 class="text-3xl font-bold mt-2">
+              ₹
+              <span
+                th:if="${balance != null}"
+                th:text="${balance % 1 == 0 
+									? #numbers.formatDecimal(balance, 1, 0) 
+									: #numbers.formatDecimal(balance, 1, 2)}"
+              >
+                0
+              </span>
+              <span th:if="${balance == null}">0</span>
+            </h2>
+          </div>
+
+          <div
+            sec:authorize="hasRole('BUSINESS')"
+            class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"
+          >
+            <p
+              class="text-gray-400 text-xs font-semibold uppercase tracking-wider"
+            >
+              Total Revenue
+            </p>
+            <h2 class="text-2xl font-bold mt-2 text-green-600">
+              ₹
+              <span
+                th:text="${analytics?.totalRevenue != null ? analytics.totalRevenue : 0}"
+                >0</span
+              >
+            </h2>
+          </div>
+
+          <div
+            sec:authorize="hasRole('BUSINESS')"
+            class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"
+          >
+            <p
+              class="text-gray-400 text-xs font-semibold uppercase tracking-wider"
+            >
+              Pending Invoices
+            </p>
+            <h2
+              class="text-2xl font-bold mt-2 text-orange-500"
+              th:text="${analytics?.pendingInvoices != null ? analytics.pendingInvoices : 0}"
+            >
+              0
+            </h2>
+          </div>
+        </div>
+
+        <div
+          sec:authorize="hasAnyRole('PERSONAL','BUSINESS')"
+          class="space-y-8"
+        >
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div
+              class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+            >
+              <div class="p-5 border-b border-gray-50 bg-gray-50">
+                <h3 class="font-bold text-gray-700">Incoming Requests</h3>
+              </div>
+              <table class="w-full text-left text-sm">
+                <tbody class="divide-y divide-gray-50">
+                  <tr
+                    th:each="r : ${incomingRequests}"
+                    class="hover:bg-gray-50 transition"
+                  >
+                    <td class="p-4">
+                      <p
+                        class="font-semibold"
+                        th:text="${r.sender?.email != null ? r.sender.email : 'Unknown'}"
+                      ></p>
+                    </td>
+                    <td
+                      class="p-4 font-bold text-indigo-600"
+                      th:text="'₹' + ${r.amount}"
+                    ></td>
+                    <td class="p-4">
+                      <!-- PENDING -->
+                      <span
+                        th:if="${r.status == 'PENDING'}"
+                        class="px-3 py-1 rounded-full text-[10px] font-bold uppercase bg-yellow-100 text-yellow-700"
+                      >
+                        Pending
+                      </span>
+
+                      <!-- ACCEPTED -->
+                      <span
+                        th:if="${r.status == 'ACCEPTED'}"
+                        class="px-3 py-1 rounded-full text-[10px] font-bold uppercase bg-green-100 text-green-700"
+                      >
+                        Accepted
+                      </span>
+
+                      <!-- REJECTED -->
+                      <span
+                        th:if="${r.status == 'REJECTED'}"
+                        class="px-3 py-1 rounded-full text-[10px] font-bold uppercase bg-red-100 text-red-700"
+                      >
+                        Rejected
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div
+              class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+            >
+              <div class="p-5 border-b border-gray-50 bg-gray-50">
+                <h3 class="font-bold text-gray-700">Sent Requests</h3>
+              </div>
+              <table class="w-full text-left text-sm">
+                <tbody class="divide-y divide-gray-50">
+                  <tr
+                    th:each="r : ${sentRequests}"
+                    class="hover:bg-gray-50 transition"
+                  >
+                    <!-- Receiver Name -->
+                    <td class="p-4">
+                      <p
+                        class="font-semibold"
+                        th:text="${r.receiver != null && r.receiver.email != null ? r.receiver.email : 'Unknown User'}"
+                      ></p>
+                    </td>
+
+                    <!-- Amount -->
+                    <td
+                      class="p-4 font-bold"
+                      th:text="'₹' + ${#numbers.formatDecimal(r.amount,1,2)}"
+                    ></td>
+
+                    <!-- Status -->
+                    <td class="p-4 text-right">
+                      <!-- PENDING -->
+                      <span
+                        th:if="${r.status == 'PENDING'}"
+                        class="px-2 py-1 rounded-full text-[10px] font-bold uppercase bg-yellow-100 text-yellow-700"
+                      >
+                        Pending
+                      </span>
+
+                      <!-- ACCEPTED -->
+                      <span
+                        th:if="${r.status == 'ACCEPTED'}"
+                        class="px-2 py-1 rounded-full text-[10px] font-bold uppercase bg-green-100 text-green-700"
+                      >
+                        Accepted
+                      </span>
+
+                      <!-- REJECTED -->
+                      <span
+                        th:if="${r.status == 'REJECTED'}"
+                        class="px-2 py-1 rounded-full text-[10px] font-bold uppercase bg-red-100 text-red-700"
+                      >
+                        Declined
+                      </span>
+
+                      <!-- UNKNOWN STATUS (Safety fallback) -->
+                      <span
+                        th:if="${r.status != 'PENDING' && r.status != 'ACCEPTED' && r.status != 'REJECTED'}"
+                        class="px-2 py-1 rounded-full text-[10px] font-bold uppercase bg-gray-100 text-gray-600"
+                        th:text="${r.status}"
+                      >
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div
+            class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6"
+          >
+            <h3 class="font-bold text-gray-800 mb-6">My Payment Cards</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div
+                th:each="c : ${cards}"
+                class="p-4 bg-indigo-50 rounded-xl border border-indigo-100 flex justify-between items-center"
+              >
+                <div>
+                  <p
+                    class="font-mono text-sm tracking-widest text-indigo-900"
+                    th:text="${'**** ' + #strings.substring(c.cardNumber, c.cardNumber.length() - 4)}"
+                  ></p>
+                  <p class="text-xs text-indigo-400 mt-1 uppercase font-bold">
+                    Available: ₹<span th:text="${c.availableBalance}"></span>
+                  </p>
+                </div>
+                <div class="h-8 w-12 bg-indigo-200 rounded opacity-50"></div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            sec:authorize="hasRole('BUSINESS')"
+            class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+          >
+            <div
+              class="p-5 border-b border-gray-50 flex justify-between items-center"
+            >
+              <h3 class="font-bold text-gray-800">My Invoices</h3>
+            </div>
+
+            <table class="w-full text-left text-sm">
+              <thead
+                class="bg-gray-50 text-gray-400 uppercase text-[10px] tracking-widest"
+              >
+                <tr>
+                  <th class="p-4">From</th>
+                  <th class="p-4">Amount</th>
+                  <th class="p-4">Due</th>
+                  <th class="p-4">Status</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-50">
+                <tr th:each="inv : ${createdInvoices}">
+                  <td
+                    class="p-4 font-medium"
+                    th:text="${inv.customer?.email != null ? inv.customer.email : 'Unknown'}"
+                  ></td>
+                  <td class="p-4 font-bold" th:text="'₹' + ${inv.amount}"></td>
+                  <td class="p-4 text-gray-500" th:text="${inv.dueDate}"></td>
+                  <td
+                    class="p-4 text-xs font-bold uppercase text-orange-600"
+                    th:text="${inv.status}"
+                  ></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div
+            sec:authorize="hasRole('BUSINESS')"
+            class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+          >
+            <div class="p-5 border-b border-gray-50 bg-indigo-50">
+              <h3 class="font-bold text-indigo-900">Active Business Loans</h3>
+            </div>
+            <table class="w-full text-left text-sm">
+              <tbody class="divide-y divide-gray-50">
+                <tr
+                  th:each="l : ${loans}"
+                  th:if="${l.status == 'APPROVED' or l.status == 'PENDING'}"
+                >
+                  <td class="p-4">
+                    <div class="space-y-1">
+                      <p class="font-semibold">
+                        Principal: ₹<span th:text="${l.principalAmount}"></span>
+                      </p>
+
+                      <p class="text-sm text-gray-600">
+                        EMI: ₹<span
+                          th:text="${#numbers.formatDecimal(l.emiAmount, 1, 2)}"
+                        ></span>
+                        per month
+                      </p>
+
+                      <p class="text-sm text-red-500 font-bold">
+                        Remaining: ₹<span
+                          th:text="${#numbers.formatDecimal(l.remainingAmount, 1, 2)}"
+                        ></span>
+                      </p>
+
+                      <p
+                        class="text-xs text-gray-500"
+                        th:if="${l.status == 'PENDING'}"
+                      >
+                        Status:
+                        <span class="text-yellow-600 font-bold"
+                          >PENDING APPROVAL</span
+                        >
+                      </p>
+                    </div>
+                  </td>
+
+                  <td class="p-4 text-right">
+                    <form
+                      th:if="${l.status == 'APPROVED'}"
+                      th:action="@{/loan/repay/{id}(id=${l.loanId})}"
+                      method="post"
+                    >
+                      <button
+                        class="bg-gray-900 text-white px-4 py-1.5 rounded-lg text-xs hover:bg-black"
+                      >
+                        Pay ₹<span
+                          th:text="${#numbers.formatDecimal(l.emiAmount, 1, 2)}"
+                        ></span>
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div
+          sec:authorize="hasRole('ADMIN')"
+          class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mt-8"
+        >
+          <div
+            class="p-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center"
+          >
+            <h3 class="font-bold">Admin: Loan Management</h3>
+            <a
+              href="/loan/admin"
+              class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold"
+              >View All →</a
+            >
+          </div>
+          <table class="w-full text-left text-sm">
+            <thead
+              class="bg-gray-50 text-gray-400 uppercase text-[10px] tracking-widest"
+            >
+              <tr>
+                <th class="p-4">User</th>
+                <th class="p-4">Amount</th>
+                <th class="p-4">Status</th>
+                <th class="p-4">Document</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+              <tr th:each="l : ${loans}" th:if="${l.status == 'PENDING'}">
+                <td
+                  class="p-4 font-medium"
+                  th:text="${l.user?.email != null ? l.user.email : 'Unknown'}"
+                ></td>
+
+                <td class="p-4">
+                  <div class="space-y-1 text-sm">
+                    <p>
+                      Principal: ₹<span th:text="${l.principalAmount}"></span>
+                    </p>
+                    <p>
+                      EMI: ₹<span
+                        th:text="${#numbers.formatDecimal(l.emiAmount,1,2)}"
+                      ></span>
+                    </p>
+                    <p class="text-red-500 font-semibold">
+                      Remaining: ₹<span
+                        th:text="${#numbers.formatDecimal(l.remainingAmount,1,2)}"
+                      ></span>
+                    </p>
+                  </div>
+                </td>
+
+                <td class="p-4">
+                  <span
+                    th:if="${l.status == 'PENDING'}"
+                    class="px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700"
+                  >
+                    PENDING
+                  </span>
+
+                  <span
+                    th:if="${l.status == 'APPROVED'}"
+                    class="px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700"
+                  >
+                    ACTIVE
+                  </span>
+
+                  <span
+                    th:if="${l.status == 'CLOSED'}"
+                    class="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700"
+                  >
+                    CLOSED
+                  </span>
+
+                  <span
+                    th:if="${l.status == 'REJECTED'}"
+                    class="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700"
+                  >
+                    REJECTED
+                  </span>
+                </td>
+
+                <td class="p-4">
+                  <a
+                    th:if="${l.documentPath != null}"
+                    th:href="@{/loan/document/{id}(id=${l.loanId})}"
+                    target="_blank"
+                    class="text-indigo-600 text-xs font-bold hover:underline"
+                  >
+                    View Document
+                  </a>
+                  <span
+                    th:if="${l.documentPath == null}"
+                    class="text-gray-400 text-xs"
+                    >No Document</span
+                  >
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
