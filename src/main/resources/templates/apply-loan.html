@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apply for Loan - RevPay</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" th:href="@{/css/forms.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* Custom styling for the file input to hide the default button */
+        .file-upload-wrapper input[type="file"] {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 flex items-center justify-center min-h-screen p-4">
+
+    <div class="max-w-md w-full bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+        
+        <div class="bg-indigo-900 p-8 text-center text-white">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-indigo-800 rounded-full mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-10V4m0 10V4m-4 1h4m-4 4h4m-4 4h4" />
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold">Business Loan</h2>
+            <p class="text-indigo-300 text-sm mt-1">Submit your application for review</p>
+        </div>
+
+        <form method="post" action="/loan/apply" enctype="multipart/form-data" class="p-8 space-y-6" id="loanApplyForm">
+
+            <div th:if="${error}" class="alert-dismissible p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <span th:text="${error}"></span>
+            </div>
+            <div th:if="${success}" class="alert-dismissible p-3 bg-green-50 text-green-600 text-sm rounded-lg border border-green-100 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                <span th:text="${success}"></span>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Principal Amount</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400 font-bold">₹</span>
+                    <input type="number" name="amount" placeholder="50,000"
+                        class="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 outline-none transition font-semibold"
+                        required>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Tenure (Months)</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" /></svg>
+                    </span>
+                    <input type="number" name="months" placeholder="12"
+                        class="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 outline-none transition"
+                        required>
+                    <span class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 text-[10px] font-bold tracking-tighter">MONTHS</span>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Supporting Documents</label>
+                <div class="file-upload-wrapper">
+                    <label for="document" class="flex items-center justify-between w-full px-4 py-3 rounded-xl border border-gray-200 border-dashed cursor-pointer hover:bg-gray-50 hover:border-indigo-300 transition group">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-indigo-50 text-indigo-600 rounded-lg group-hover:bg-indigo-100 transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                </svg>
+                            </div>
+                            <span id="file-name" class="text-sm text-gray-500">Upload PDF or Image</span>
+                        </div>
+                        <span class="text-[10px] font-bold text-indigo-500 uppercase">Browse</span>
+                        <input type="file" id="document" name="document" accept=".pdf,.jpg,.jpeg,.png" required onchange="updateFileName()">
+                    </label>
+                </div>
+                <p class="text-[10px] text-gray-400 mt-2 px-1 italic">Identity proof or business registration (Max 5MB)</p>
+            </div>
+
+            <div class="p-4 bg-indigo-50 rounded-xl border border-indigo-100">
+                <div class="flex gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600 flex-shrink-0" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p class="text-[11px] text-indigo-700 leading-tight">
+                        Our team will verify your documents. Approval typically takes 24-48 hours. 
+                        Ensure all uploaded files are clear and legible.
+                    </p>
+                </div>
+            </div>
+
+            <button type="submit"
+                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-200 transition transform hover:-translate-y-0.5 active:scale-95">
+                Submit Application
+            </button>
+
+            <div class="text-center">
+                <a href="/dashboard" class="text-sm text-gray-400 hover:text-indigo-600 transition font-medium flex items-center justify-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                    Back to Dashboard
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <script th:src="@{/js/validation.js}"></script>
+    <script>
+        // Simple JS to show the selected filename in the custom UI
+        function updateFileName() {
+            const input = document.getElementById('document');
+            const fileNameDisplay = document.getElementById('file-name');
+            if (input.files.length > 0) {
+                fileNameDisplay.textContent = input.files[0].name;
+                fileNameDisplay.classList.remove('text-gray-500');
+                fileNameDisplay.classList.add('text-indigo-600', 'font-semibold');
+            } else {
+                fileNameDisplay.textContent = 'Upload PDF or Image';
+            }
+        }
+    </script>
+</body>
+
+</html>

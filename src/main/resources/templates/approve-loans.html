@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Management - Admin RevPay</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" th:href="@{/css/forms.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+            <div>
+                <h2 class="text-3xl font-bold text-gray-900 tracking-tight">Loan Management Panel</h2>
+                <p class="text-gray-500 mt-1">Review, approve, or decline business loan applications.</p>
+            </div>
+            <a href="/dashboard" class="inline-flex items-center px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition shadow-sm">
+                &larr; Back to Dashboard
+            </a>
+        </div>
+
+        <div th:if="${success}" class="alert-dismissible mb-6 p-4 bg-green-50 border-l-4 border-green-500 text-green-700 rounded-xl shadow-sm" th:text="${success}"></div>
+        <div th:if="${error}" class="alert-dismissible mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-xl shadow-sm" th:text="${error}"></div>
+
+        <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-indigo-900 text-white">
+                            <th class="p-5 font-semibold text-xs uppercase tracking-wider">Applicant</th>
+                            <th class="p-5 font-semibold text-xs uppercase tracking-wider">Loan Details</th>
+                            <th class="p-5 font-semibold text-xs uppercase tracking-wider text-center">EMI</th>
+                            <th class="p-5 font-semibold text-xs uppercase tracking-wider">Repayment</th>
+                            <th class="p-5 font-semibold text-xs uppercase tracking-wider">Status</th>
+                            <th class="p-5 font-semibold text-xs uppercase tracking-wider text-center">Actions</th>
+                            <th class="p-5 font-semibold text-xs uppercase tracking-wider">Document</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        <tr th:each="l : ${loans}" class="hover:bg-gray-50 transition-colors">
+                            <td class="p-5 text-sm">
+                                <p class="font-bold text-gray-900" th:text="${l.user?.email != null ? l.user.email : 'Unknown'}">user@email.com</p>
+                                <p class="text-xs text-gray-400 font-mono" th:text="'ID: #' + ${l.loanId}">ID</p>
+                            </td>
+                            
+                            <td class="p-5">
+                                <p class="text-lg font-bold text-gray-900" th:text="'₹' + ${l.principalAmount}">₹0</p>
+                                <p class="text-xs text-gray-500" th:text="${l.tenureMonths} + ' Months Tenure'">0 Mo</p>
+                            </td>
+                            
+                            <td class="p-5 text-center">
+                                <span class="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-bold" th:text="'₹' + ${l.emiAmount}">₹0</span>
+                            </td>
+
+                            <td class="p-5">
+                                <p class="text-sm font-semibold text-red-600" th:text="'Remaining: ₹' + ${l.remainingAmount}">₹0</p>
+                            </td>
+                            
+                            <td class="p-5">
+                                <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest"
+                                      th:classappend="${l.status == 'PENDING' ? 'bg-yellow-100 text-yellow-700' : 
+                                                      (l.status == 'APPROVED' ? 'bg-green-100 text-green-700' : 
+                                                      (l.status == 'CLOSED' ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'))}"
+                                      th:text="${l.status}">
+                                    STATUS
+                                </span>
+                            </td>
+
+                            <td class="p-5">
+                                <div th:if="${l.status == 'PENDING'}" class="flex items-center justify-center gap-2">
+                                    <form th:action="@{/loan/approve/{id}(id=${l.loanId})}" method="post" class="admin-approve-form">
+                                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition shadow-sm">
+                                            Approve
+                                        </button>
+                                    </form>
+                                    <form th:action="@{/loan/reject/{id}(id=${l.loanId})}" method="post" class="admin-reject-form">
+                                        <button type="submit" class="bg-white border border-red-200 text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg text-xs font-bold transition">
+                                            Reject
+                                        </button>
+                                    </form>
+                                </div>
+                                <div class="text-center italic text-gray-400 text-xs" th:unless="${l.status == 'PENDING'}">
+                                    <span th:if="${l.status == 'CLOSED'}" class="text-blue-600 font-bold">Settled ✔</span>
+                                    <span th:if="${l.status == 'REJECTED'}" class="text-red-400">Application Declined</span>
+                                    <span th:if="${l.status == 'APPROVED'}" class="text-green-600">Active Loan</span>
+                                </div>
+                            </td>
+
+                            <td class="p-5 text-center">
+                                <a th:if="${l.documentPath != null}"
+                                   th:href="@{/loan/document/{id}(id=${l.loanId})}"
+                                   target="_blank"
+                                   class="text-indigo-600 text-xs font-bold hover:underline">
+                                    View Document
+                                </a>
+                                <span th:if="${l.documentPath == null}" class="text-gray-400 text-xs">No Document</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/validation.js}"></script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Invoices - RevPay</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" th:href="@{/css/forms.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto">
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+            <div>
+                <h2 class="text-3xl font-bold text-gray-900 tracking-tight">Invoices Received</h2>
+                <p class="text-gray-500 mt-1">Manage and pay your outstanding business bills.</p>
+            </div>
+            <a href="/dashboard" class="inline-flex items-center px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition shadow-sm">
+                &larr; Back to Dashboard
+            </a>
+        </div>
+
+        <div th:if="${success}" class="mb-6 p-4 bg-green-50 border-l-4 border-green-500 text-green-700 rounded shadow-sm" th:text="${success}"></div>
+        <div th:if="${error}" class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded shadow-sm" th:text="${error}"></div>
+
+        <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-indigo-900 text-white">
+                            <th class="p-5 font-semibold text-sm uppercase tracking-wider">Business</th>
+                            <th class="p-5 font-semibold text-sm uppercase tracking-wider">Amount</th>
+                            <th class="p-5 font-semibold text-sm uppercase tracking-wider">Description</th>
+                            <th class="p-5 font-semibold text-sm uppercase tracking-wider">Status</th>
+                            <th class="p-5 font-semibold text-sm uppercase tracking-wider text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        <tr th:each="i : ${invoices}" class="hover:bg-gray-50 transition-colors">
+                            <td class="p-5">
+                                <div class="flex items-center gap-3">
+                                    <div class="h-9 w-9 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-700">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <span class="font-semibold text-gray-800" th:text="${i.business.email}">business@example.com</span>
+                                </div>
+                            </td>
+                            
+                            <td class="p-5 font-bold text-gray-900 text-lg" th:text="'₹' + ${i.amount}">₹0.00</td>
+                            
+                            <td class="p-5 text-sm text-gray-500 max-w-xs truncate" th:text="${i.description}">Invoice description</td>
+                            
+                            <td class="p-5">
+                                <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest"
+                                      th:classappend="${i.status == 'PAID' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}"
+                                      th:text="${i.status}">
+                                    PENDING
+                                </span>
+                            </td>
+
+                            <td class="p-5">
+                                <div th:if="${i.status == 'PENDING'}" class="flex flex-col gap-2 min-w-[180px]">
+                                    <form th:action="@{/invoice/pay/{id}(id=${i.invoiceId})}" method="post" class="invoice-pay-wallet">
+                                        <button type="submit" class="w-full py-2 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-700 transition shadow-md shadow-indigo-100 uppercase">
+                                            Pay via Wallet
+                                        </button>
+                                    </form>
+
+                                    <form th:action="@{/invoice/pay/{id}(id=${i.invoiceId})}" method="post" class="invoice-pay-card flex gap-1">
+                                        <select name="cardId" class="flex-1 text-[10px] font-bold border border-gray-200 rounded-lg bg-gray-50 px-2 py-2 outline-none focus:ring-1 focus:ring-indigo-500">
+                                            <option th:each="c : ${cards}"
+                                                    th:value="${c.methodId}"
+                                                    th:text="${'**** ' + #strings.substring(c.cardNumber, c.cardNumber.length() - 4)}"></option>
+                                        </select>
+                                        <button type="submit" class="px-3 py-2 bg-gray-800 text-white text-[10px] font-bold rounded-lg hover:bg-black transition uppercase">
+                                            Card
+                                        </button>
+                                    </form>
+                                </div>
+                                <div th:if="${i.status == 'PAID'}" class="text-center text-green-600 font-bold flex items-center justify-center gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                    </svg>
+                                    <span>Settled</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(invoices)}">
+                            <td colspan="5" class="p-20 text-center text-gray-400">
+                                <p class="text-lg font-medium">No invoices found.</p>
+                                <p class="text-sm">You're all caught up with your bills.</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/validation.js}"></script>
+</body>
+</html>
