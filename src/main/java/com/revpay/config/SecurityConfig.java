@@ -10,7 +10,6 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -29,11 +28,6 @@ import org.springframework.security.config.annotation.authentication.configurati
 @EnableMethodSecurity
 public class SecurityConfig {
 
-//    private final JwtAuthFilter jwtAuthFilter;
-//
-//    SecurityConfig(JwtAuthFilter jwtAuthFilter) {
-//        this.jwtAuthFilter = jwtAuthFilter;
-//    }
 	@Autowired
 	private JwtAuthFilter jwtAuthFilter;
 
@@ -48,11 +42,37 @@ public class SecurityConfig {
 
         http
             .csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
             .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/api/auth/**").permitAll()
-                    .anyRequest().authenticated()
+            		.requestMatchers(
+            		        "/css/**",
+            		        "/js/**",
+            		        "/images/**",
+            		        "/register",
+            		        "/login",
+            		        "/forgot-password",   // ✅ ADD THIS
+            		        "/verify-color",      // ✅ ADD THIS
+            		        "/reset-password"     // ✅ ADD THIS
+            		).permitAll()
+                .requestMatchers("/api/**").authenticated()
+                .anyRequest().authenticated()
             )
+
+            
+            .formLogin(form -> form
+            	    .loginPage("/login")
+            	    .loginProcessingUrl("/login")  // must match controller
+            	    .defaultSuccessUrl("/dashboard", true)
+            	    .failureUrl("/login?error=true")
+            	    .permitAll()
+            	)
+
+            .logout(logout -> logout
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/login?logout")
+            )
+
+            // keep JWT for API
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
