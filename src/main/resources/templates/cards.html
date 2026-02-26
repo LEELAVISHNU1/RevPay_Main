@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Cards - RevPay</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" th:href="@{/css/forms.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto">
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
+            <div>
+                <h2 class="text-3xl font-bold text-gray-900 tracking-tight">My Linked Cards</h2>
+                <p class="text-gray-500 mt-1">Manage your payment methods and top up balances.</p>
+            </div>
+            <div class="flex gap-3">
+                <a href="/dashboard" class="px-5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition shadow-sm">
+                    &larr; Dashboard
+                </a>
+                <a href="/cards/add" class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">
+                    + Add New Card
+                </a>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            
+            <div th:each="c : ${cards}" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden flex flex-col">
+                
+                <div class="p-6 bg-gradient-to-br from-indigo-700 to-indigo-900 text-white relative overflow-hidden">
+                    <div class="relative z-10">
+                        <div class="flex justify-between items-start mb-10">
+                            <div class="h-10 w-14 bg-yellow-400/20 rounded-md border border-yellow-400/30 flex items-center justify-center">
+                                <div class="h-6 w-8 bg-yellow-500/40 rounded-sm"></div>
+                            </div>
+                            <span class="text-xs font-bold opacity-70 tracking-widest uppercase">RevPay Platinum</span>
+                        </div>
+                        <p class="text-xl font-mono tracking-[0.2em] mb-4" th:text="${'**** **** **** ' + c.cardNumber.substring(c.cardNumber.length()-4)}"></p>
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <p class="text-[10px] uppercase opacity-60 tracking-tighter">Available Balance</p>
+                                <p class="text-2xl font-bold" th:text="'₹' + ${c.availableBalance}">₹0.00</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-[10px] uppercase opacity-60">Card ID</p>
+                                <p class="font-bold text-sm" th:text="${c.methodId}"></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="absolute -right-10 -bottom-10 h-40 w-40 bg-white/10 rounded-full"></div>
+                </div>
+
+                <div class="p-6 space-y-4 flex-1 flex flex-col justify-between">
+                    <form action="/cards/deposit" method="post" class="space-y-3 deposit-form">
+                        <input type="hidden" name="cardId" th:value="${c.methodId}">
+                        <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">Top up Card</label>
+                        <div class="flex gap-2">
+                            <input type="number" step="0.01" name="amount" placeholder="Amount" required
+                                   class="flex-1 px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm transition">
+                            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-700 transition">
+                                Add
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="pt-4 border-t border-gray-50 flex justify-end">
+                        <form th:action="@{/cards/delete/{id}(id=${c.methodId})}" method="post" class="delete-card-form">
+                            <button type="submit" class="text-xs font-bold text-red-400 hover:text-red-600 transition flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                                Remove Card
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${#lists.isEmpty(cards)}" class="col-span-full py-20 bg-white rounded-3xl border border-dashed border-gray-300 text-center">
+                <p class="text-gray-400">No cards linked. Add one to start transacting!</p>
+            </div>
+
+        </div>
+    </div>
+
+    <script th:src="@{/js/validation.js}"></script>
+</body>
+</html>

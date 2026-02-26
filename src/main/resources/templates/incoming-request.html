@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incoming Requests - RevPay</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" th:href="@{/css/forms.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen p-4 md:p-8">
+
+<div class="max-w-4xl mx-auto">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <div>
+            <h2 class="text-3xl font-bold text-gray-900">Incoming Requests</h2>
+            <p class="text-gray-500 mt-1">Review and manage money requests sent to you.</p>
+        </div>
+        <a href="/dashboard"
+           class="inline-flex items-center px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition shadow-sm">
+            &larr; Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Alerts -->
+    <div th:if="${success}"
+         class="mb-6 p-4 bg-green-50 border-l-4 border-green-500 text-green-700 rounded shadow-sm"
+         th:text="${success}"></div>
+
+    <div th:if="${error}"
+         class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded shadow-sm"
+         th:text="${error}"></div>
+
+    <!-- Table -->
+    <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+
+                <thead>
+                <tr class="bg-indigo-900 text-white">
+                    <th class="p-5 font-semibold text-sm uppercase tracking-wider">Requested By</th>
+                    <th class="p-5 font-semibold text-sm uppercase tracking-wider">Amount</th>
+                    <th class="p-5 font-semibold text-sm uppercase tracking-wider">Note</th>
+                    <th class="p-5 font-semibold text-sm uppercase tracking-wider text-center">Action</th>
+                </tr>
+                </thead>
+
+                <tbody class="divide-y divide-gray-100">
+
+                <tr th:each="r : ${requests}" class="hover:bg-gray-50 transition-colors">
+
+                    <!-- SHOW REQUESTER (receiver) -->
+                    <td class="p-5">
+                        <div class="flex items-center gap-3">
+                            <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold">
+                                <span th:text="${#strings.substring(r.receiver.email,0,1).toUpperCase()}">U</span>
+                            </div>
+                            <span class="font-medium text-gray-900"
+                                  th:text="${r.sender.email}">
+                            </span>
+                        </div>
+                    </td>
+
+                    <!-- Amount -->
+                    <td class="p-5">
+                        <span class="text-lg font-bold text-gray-900"
+                              th:text="'₹' + ${#numbers.formatDecimal(r.amount,1,2)}">
+                        </span>
+                    </td>
+
+                    <!-- Note -->
+                    <td class="p-5">
+                        <span class="text-sm text-gray-500 italic"
+                              th:text="${r.note != null && r.note != '' ? r.note : 'No note provided'}">
+                        </span>
+                    </td>
+
+                    <!-- Actions -->
+                    <td class="p-5">
+                        <div class="flex items-center justify-center gap-2">
+
+                            <form th:action="@{/requests/accept/{id}(id=${r.requestId})}"
+                                  method="post">
+                                <button type="submit"
+                                        class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded-lg transition shadow-md uppercase">
+                                    Accept
+                                </button>
+                            </form>
+
+                            <form th:action="@{/requests/reject/{id}(id=${r.requestId})}"
+                                  method="post">
+                                <button type="submit"
+                                        class="px-4 py-2 bg-white border border-red-200 text-red-600 hover:bg-red-50 text-xs font-bold rounded-lg transition uppercase">
+                                    Reject
+                                </button>
+                            </form>
+
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Empty State -->
+                <tr th:if="${#lists.isEmpty(requests)}">
+                    <td colspan="4" class="p-20 text-center text-gray-400">
+                        <p class="text-lg font-medium">All caught up!</p>
+                        <p class="text-sm">No new incoming requests at the moment.</p>
+                    </td>
+                </tr>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/validation.js}"></script>
+</body>
+</html>
