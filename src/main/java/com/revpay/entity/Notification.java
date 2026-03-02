@@ -7,36 +7,66 @@ import java.time.LocalDateTime;
 @Table(name = "notifications")
 public class Notification {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long notificationId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long notificationId;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+	@ManyToOne
+	@JoinColumn(name = "user_id")
+	private User user;
 
-    private String title;
-    private String message;
-    private boolean isRead;
+	private String title;
+	private String message;
+	private boolean isRead;
 
-    private LocalDateTime createdAt;
+	private LocalDateTime createdAt;
 
-    // getters setters
-    public Long getNotificationId() { return notificationId; }
-    public void setNotificationId(Long notificationId) { this.notificationId = notificationId; }
+	// getters setters
+	public Long getNotificationId() {
+		return notificationId;
+	}
 
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
+	public void setNotificationId(Long notificationId) {
+		this.notificationId = notificationId;
+	}
 
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
+	public User getUser() {
+		return user;
+	}
 
-    public String getMessage() { return message; }
-    public void setMessage(String message) { this.message = message; }
+	public void setUser(User user) {
+		this.user = user;
+	}
 
-    public boolean isRead() { return isRead; }
-    public void setIsRead(boolean read) { isRead = read; }
+	public String getTitle() {
+		return title;
+	}
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+
+	public boolean isRead() {
+		return isRead;
+	}
+
+	public void setIsRead(boolean read) {
+		isRead = read;
+	}
+
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
 }

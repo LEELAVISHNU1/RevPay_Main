@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+
+    <Properties>
+        <Property name="LOG_PATTERN">
+            %d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n
+        </Property>
+    </Properties>
+
+    <Appenders>
+
+        <!-- File Appender -->
+        <File name="FileLogger"
+              fileName="logs/revpay.log"
+              append="true">
+            <PatternLayout pattern="${LOG_PATTERN}" />
+        </File>
+
+    </Appenders>
+
+    <Loggers>
+
+        <!-- Root Logger (NO CONSOLE) -->
+        <Root level="info">
+            <AppenderRef ref="FileLogger"/>
+        </Root>
+
+    </Loggers>
+
+</Configuration>
