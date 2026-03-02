@@ -7,11 +7,11 @@ import java.util.List;
 
 public interface MoneyRequestRepository extends JpaRepository<MoneyRequest, Long> {
 
-    List<MoneyRequest> findByReceiver(User receiver);
+	List<MoneyRequest> findByReceiver(User receiver);
 
-    List<MoneyRequest> findByReceiverAndStatus(User receiver, String status);
+	List<MoneyRequest> findByReceiverAndStatus(User receiver, String status);
 
-    List<MoneyRequest> findBySender(User sender);
-    
-    List<MoneyRequest> findBySenderAndStatus(User sender, String status);
+	List<MoneyRequest> findBySender(User sender);
+
+	List<MoneyRequest> findBySenderAndStatus(User sender, String status);
 }

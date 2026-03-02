@@ -61,7 +61,6 @@ public class Wallet {
 		this.updatedAt = updatedAt;
 	}
 
-    // getters & setters
     
     
 }

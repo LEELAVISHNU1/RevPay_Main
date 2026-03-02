@@ -104,7 +104,8 @@
 				th:text="${error}"></div>
 
 			<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-				<div class="bg-gradient-to-br from-indigo-600 to-indigo-800 p-6 rounded-2xl shadow-lg text-white">
+				<!-- Wallet Balance Card - Only visible to non-admin users -->
+				<div sec:authorize="!hasRole('ADMIN')" class="bg-gradient-to-br from-indigo-600 to-indigo-800 p-6 rounded-2xl shadow-lg text-white">
 					<p class="text-indigo-200 text-xs font-semibold uppercase tracking-wider">Wallet Balance</p>
 					<h2 class="text-3xl font-bold mt-2">
 						₹ <span th:if="${balance != null}" 
@@ -115,6 +116,13 @@
 						</span>
 						<span th:if="${balance == null}">0</span>
 					</h2>
+				</div>
+
+				<!-- For admin users, we need to adjust the grid columns -->
+				<div sec:authorize="hasRole('ADMIN')" class="bg-gradient-to-br from-indigo-600 to-indigo-800 p-6 rounded-2xl shadow-lg text-white md:col-span-2">
+					<p class="text-indigo-200 text-xs font-semibold uppercase tracking-wider">Admin Dashboard</p>
+					<h2 class="text-2xl font-bold mt-2">Loan Management</h2>
+					<p class="text-indigo-200 text-sm mt-1">Review and manage loan applications</p>
 				</div>
 
 				<div sec:authorize="hasRole('BUSINESS')"
@@ -132,6 +140,7 @@
 				</div>
 			</div>
 
+			<!-- Rest of the content remains exactly the same -->
 			<div sec:authorize="hasAnyRole('PERSONAL','BUSINESS')" class="space-y-8">
 
 				<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">

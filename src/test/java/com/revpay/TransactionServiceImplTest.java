@@ -5,6 +5,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Optional;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,6 +17,7 @@ import com.revpay.entity.Transaction;
 import com.revpay.entity.User;
 import com.revpay.entity.Wallet;
 import com.revpay.repository.TransactionRepository;
+import com.revpay.repository.WalletRepository;
 import com.revpay.service.impl.TransactionServiceImpl;
 import com.revpay.service.interfaces.WalletService;
 
@@ -25,7 +28,7 @@ class TransactionServiceImplTest {
     private TransactionRepository transactionRepository;
 
     @Mock
-    private WalletService walletService;
+    private WalletRepository walletRepository;   // ✅ mock correct dependency
 
     @InjectMocks
     private TransactionServiceImpl transactionService;
@@ -34,10 +37,12 @@ class TransactionServiceImplTest {
     void testCreateTransaction() {
 
         User user = new User();
+
         Wallet wallet = new Wallet();
         wallet.setBalance(500.0);
 
-        when(walletService.getWalletByUser(user)).thenReturn(wallet);
+        when(walletRepository.findByUser(user))
+                .thenReturn(Optional.of(wallet));   // ✅ FIX
 
         transactionService.createTransaction(user, 100.0, "Test");
 

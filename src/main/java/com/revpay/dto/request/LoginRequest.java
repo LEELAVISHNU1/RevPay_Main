@@ -5,12 +5,12 @@ import jakarta.validation.constraints.NotBlank;
 
 public class LoginRequest {
 
-    @NotBlank(message = "Email is required")
-    @Email(message = "Enter valid email")
-    private String username;
+	@NotBlank(message = "Email is required")
+	@Email(message = "Enter valid email")
+	private String username;
 
-    @NotBlank(message = "Password is required")
-    private String password;
+	@NotBlank(message = "Password is required")
+	private String password;
 
 	public String getUsername() {
 		return username;
@@ -28,7 +28,4 @@ public class LoginRequest {
 		this.password = password;
 	}
 
-    // getters & setters
-    
-    
 }

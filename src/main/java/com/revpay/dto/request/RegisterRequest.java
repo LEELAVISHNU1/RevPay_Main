@@ -1,32 +1,30 @@
 package com.revpay.dto.request;
+
 import jakarta.validation.constraints.*;
 
 public class RegisterRequest {
 
-    @NotBlank(message = "Full name is required")
-    private String fullName;
+	@NotBlank(message = "Full name is required")
+	private String fullName;
 
-    @NotBlank(message = "Email is required")
-    @Email(message = "Enter valid email")
-    private String email;
+	@NotBlank(message = "Email is required")
+	@Email(message = "Enter valid email")
+	private String email;
 
-    @NotBlank(message = "Phone is required")
-    @Pattern(regexp = "^[0-9]{10}$", message = "Phone must be 10 digits")
-    private String phone;
+	@NotBlank(message = "Phone is required")
+	@Pattern(regexp = "^[0-9]{10}$", message = "Phone must be 10 digits")
+	private String phone;
 
-    @NotBlank(message = "Password is required")
-    @Size(min = 6, message = "Password must be at least 6 characters")
-    private String password;
+	@NotBlank(message = "Password is required")
+	@Size(min = 6, message = "Password must be at least 6 characters")
+	private String password;
 
-    @NotBlank(message = "Role is required")
-    private String role;
-    
-    @NotBlank(message = "Transaction PIN is required")
-    @Pattern(regexp = "\\d{4}", message = "PIN must be exactly 4 digits")
-    private String transactionPin;
-    
-    
-   
+	@NotBlank(message = "Role is required")
+	private String role;
+
+	@NotBlank(message = "Transaction PIN is required")
+	@Pattern(regexp = "\\d{4}", message = "PIN must be exactly 4 digits")
+	private String transactionPin;
 
 	public String getTransactionPin() {
 		return transactionPin;
@@ -75,18 +73,15 @@ public class RegisterRequest {
 	public void setRole(String role) {
 		this.role = role;
 	}
-	
+
 	private String favoriteColor;
 
 	public String getFavoriteColor() {
-	    return favoriteColor;
+		return favoriteColor;
 	}
 
 	public void setFavoriteColor(String favoriteColor) {
-	    this.favoriteColor = favoriteColor;
+		this.favoriteColor = favoriteColor;
 	}
 
-    // getters setters
-    
-    
 }

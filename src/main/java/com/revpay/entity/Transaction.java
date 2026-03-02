@@ -81,6 +81,4 @@ public class Transaction {
 		this.remark = remark;
 	}
 
-	// getters setters
-
 }
