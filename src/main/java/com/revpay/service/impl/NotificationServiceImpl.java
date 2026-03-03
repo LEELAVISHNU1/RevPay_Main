@@ -99,26 +99,26 @@ public class NotificationServiceImpl implements NotificationService {
      * Used for:
      * - Full notifications page with pagination
      */
-    @Override
-    public PageResponse<?> myNotifications(int page, int size) {
-
-        User user = userService.getCurrentUser();
-
-        logger.info("Fetching paginated notifications for user: {} | page={} size={}",
-                user.getEmail(), page, size);
-
-        Pageable pageable = PageRequest.of(page, size);
-
-        Page<Notification> notificationPage =
-                notificationRepository.findByUserOrderByCreatedAtDesc(user, pageable);
-
-        return new PageResponse<>(
-                notificationPage.getContent(),
-                notificationPage.getNumber(),
-                notificationPage.getTotalPages(),
-                notificationPage.getTotalElements()
-        );
-    }
+//    @Override
+//    public PageResponse<?> myNotifications(int page, int size) {
+//
+//        User user = userService.getCurrentUser();
+//
+//        logger.info("Fetching paginated notifications for user: {} | page={} size={}",
+//                user.getEmail(), page, size);
+//
+//        Pageable pageable = PageRequest.of(page, size);
+//
+//        Page<Notification> notificationPage =
+//                notificationRepository.findByUserOrderByCreatedAtDesc(user, pageable);
+//
+//        return new PageResponse<>(
+//                notificationPage.getContent(),
+//                notificationPage.getNumber(),
+//                notificationPage.getTotalPages(),
+//                notificationPage.getTotalElements()
+//        );
+//    }
 
     // ================= MARK ALL AS READ =================
 
@@ -154,16 +154,16 @@ public class NotificationServiceImpl implements NotificationService {
     /**
      * Returns only unread notifications.
      */
-    @Override
-    public List<Notification> getUnreadNotifications() {
-
-        User user = userService.getCurrentUser();
-
-        logger.info("Fetching unread notifications for user: {}",
-                user.getEmail());
-
-        return notificationRepository.findByUserAndIsReadFalse(user);
-    }
+//    @Override
+//    public List<Notification> getUnreadNotifications() {
+//
+//        User user = userService.getCurrentUser();
+//
+//        logger.info("Fetching unread notifications for user: {}",
+//                user.getEmail());
+//
+//        return notificationRepository.findByUserAndIsReadFalse(user);
+//    }
 
     // ================= GET ALL =================
 
@@ -190,22 +190,22 @@ public class NotificationServiceImpl implements NotificationService {
      *
      * (Less efficient than deleteByUser)
      */
-    @Override
-    public void deleteAllNotifications() {
-
-        User user = userService.getCurrentUser();
-
-        logger.warn("Deleting all notifications for user: {}",
-                user.getEmail());
-
-        List<Notification> notifications =
-                notificationRepository.findByUserOrderByCreatedAtDesc(user);
-
-        notificationRepository.deleteAll(notifications);
-
-        logger.info("Deleted {} notifications for user: {}",
-                notifications.size(), user.getEmail());
-    }
+//    @Override
+//    public void deleteAllNotifications() {
+//
+//        User user = userService.getCurrentUser();
+//
+//        logger.warn("Deleting all notifications for user: {}",
+//                user.getEmail());
+//
+//        List<Notification> notifications =
+//                notificationRepository.findByUserOrderByCreatedAtDesc(user);
+//
+//        notificationRepository.deleteAll(notifications);
+//
+//        logger.info("Deleted {} notifications for user: {}",
+//                notifications.size(), user.getEmail());
+//    }
 
     // ================= CLEAR ALL =================
 

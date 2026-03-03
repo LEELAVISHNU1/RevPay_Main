@@ -49,17 +49,17 @@ class NotificationServiceImplTest {
         verify(notificationRepository, times(1)).save(any(Notification.class));
     }
 
-    @Test
-    void testGetUnreadNotifications() {
-        when(userService.getCurrentUser()).thenReturn(user);
-        when(notificationRepository.findByUserAndIsReadFalse(user))
-                .thenReturn(List.of(new Notification()));
-
-        List<Notification> result = notificationService.getUnreadNotifications();
-
-        assertEquals(1, result.size());
-        verify(notificationRepository).findByUserAndIsReadFalse(user);
-    }
+//    @Test
+//    void testGetUnreadNotifications() {
+//        when(userService.getCurrentUser()).thenReturn(user);
+//        when(notificationRepository.findByUserAndIsReadFalse(user))
+//                .thenReturn(List.of(new Notification()));
+//
+//        List<Notification> result = notificationService.getUnreadNotifications();
+//
+//        assertEquals(1, result.size());
+//        verify(notificationRepository).findByUserAndIsReadFalse(user);
+//    }
 
     @Test
     void testClearAllNotifications() {

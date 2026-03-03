@@ -23,91 +23,62 @@ function togglePassword(inputId, iconId) {
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    const registerForm = document.getElementById("registerForm");
+    const form = document.getElementById("registerForm");
+    if (!form) return;
 
-    if (!registerForm) return;
-
-    const inputs = registerForm.querySelectorAll("input, select");
-
-    // Remove error while typing
-    inputs.forEach(input => {
-        input.addEventListener("input", () => {
-            clearError(input);
-        });
-    });
-
-    registerForm.addEventListener("submit", function (e) {
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
 
         let isValid = true;
 
-        const fullName = registerForm.querySelector('input[name="fullName"]');
-        const email = registerForm.querySelector('input[name="email"]');
-        const phone = registerForm.querySelector('input[name="phone"]');
-        const password = registerForm.querySelector('input[name="password"]');
-        const pin = registerForm.querySelector('input[name="transactionPin"]');
-        const favoriteColor = registerForm.querySelector('input[name="favoriteColor"]');
-        const role = registerForm.querySelector('select[name="role"]');
+        const inputs = form.querySelectorAll("input, select");
 
-        // FULL NAME
-        if (!fullName.value.trim()) {
-            showError(fullName, "Full Name is required");
+        // Reset errors
+        inputs.forEach(input => {
+            input.classList.remove("is-invalid");
+            const feedback = input.parentElement.querySelector(".invalid-feedback");
+            if (feedback) feedback.textContent = "";
+        });
+
+        function setError(input, message) {
+            input.classList.add("is-invalid");
+            const feedback = input.parentElement.querySelector(".invalid-feedback");
+            if (feedback) feedback.textContent = message;
             isValid = false;
         }
 
-        // EMAIL
-        if (!email.value.trim()) {
-            showError(email, "Email is required");
-            isValid = false;
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
-            showError(email, "Invalid email format");
-            isValid = false;
-        }
+        const fullName = form.querySelector('[name="fullName"]');
+        const email = form.querySelector('[name="email"]');
+        const phone = form.querySelector('[name="phone"]');
+        const password = form.querySelector('[name="password"]');
+        const pin = form.querySelector('[name="transactionPin"]');
+        const favoriteColor = form.querySelector('[name="favoriteColor"]');
+        const role = form.querySelector('[name="role"]');
 
-        // PHONE
-        if (!phone.value.trim()) {
-            showError(phone, "Phone number is required");
-            isValid = false;
-        } else if (!/^\d{10}$/.test(phone.value)) {
-            showError(phone, "Phone must be 10 digits");
-            isValid = false;
-        }
+        if (!fullName.value.trim())
+            setError(fullName, "Full name is required");
 
-        // PASSWORD
-        if (!password.value.trim()) {
-            showError(password, "Password is required");
-            isValid = false;
-        } else if (password.value.length < 6) {
-            showError(password, "Password must be at least 6 characters");
-            isValid = false;
-        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value))
+            setError(email, "Enter valid email address");
 
-        // PIN
-        if (!pin.value.trim()) {
-            showError(pin, "Transaction PIN is required");
-            isValid = false;
-        } else if (!/^\d{4}$/.test(pin.value)) {
-            showError(pin, "PIN must be 4 digits");
-            isValid = false;
-        }
+        if (!/^\d{10}$/.test(phone.value.replace(/\D/g, "")))
+            setError(phone, "Phone must be 10 digits");
 
-        // FAVORITE COLOR
-        if (!favoriteColor.value.trim()) {
-            showError(favoriteColor, "Favorite color is required");
-            isValid = false;
-        }
+        if (password.value.length < 6)
+            setError(password, "Password must be at least 6 characters");
 
-        // ROLE
-        if (!role.value) {
-            showError(role, "Please select account type");
-            isValid = false;
-        }
+        if (!/^\d{4}$/.test(pin.value))
+            setError(pin, "PIN must be exactly 4 digits");
 
-        if (!isValid) {
-            e.preventDefault();
-        }
+        if (!favoriteColor.value.trim())
+            setError(favoriteColor, "Favorite color is required");
 
+        if (!role.value)
+            setError(role, "Please select account type");
+
+        if (isValid)
+            form.submit();
     });
-
 });
 
 /* =========================================================
