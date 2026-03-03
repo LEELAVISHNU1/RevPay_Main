@@ -78,4 +78,12 @@
 
     <script th:src="@{/js/validation.js}"></script>
 </body>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const dueDateInput = document.querySelector('input[name="dueDate"]');
+    
+    const today = new Date().toISOString().split("T")[0];
+    dueDateInput.setAttribute("min", today);
+});
+</script>
 </html>
