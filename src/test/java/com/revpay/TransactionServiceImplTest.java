@@ -19,7 +19,6 @@ import com.revpay.entity.Wallet;
 import com.revpay.repository.TransactionRepository;
 import com.revpay.repository.WalletRepository;
 import com.revpay.service.impl.TransactionServiceImpl;
-import com.revpay.service.interfaces.WalletService;
 
 @ExtendWith(MockitoExtension.class)
 class TransactionServiceImplTest {
@@ -28,7 +27,7 @@ class TransactionServiceImplTest {
     private TransactionRepository transactionRepository;
 
     @Mock
-    private WalletRepository walletRepository;   // ✅ mock correct dependency
+    private WalletRepository walletRepository; 
 
     @InjectMocks
     private TransactionServiceImpl transactionService;
@@ -42,7 +41,7 @@ class TransactionServiceImplTest {
         wallet.setBalance(500.0);
 
         when(walletRepository.findByUser(user))
-                .thenReturn(Optional.of(wallet));   // ✅ FIX
+                .thenReturn(Optional.of(wallet));   
 
         transactionService.createTransaction(user, 100.0, "Test");
 

@@ -13,7 +13,6 @@ import com.revpay.service.interfaces.TransactionService;
 import com.revpay.service.interfaces.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -27,314 +26,272 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class WalletServiceImplTest {
 
-    @Mock
-    private WalletRepository walletRepository;
+	@Mock
+	private WalletRepository walletRepository;
 
-    @Mock
-    private UserService userService;
+	@Mock
+	private UserService userService;
 
-    @Mock
-    private TransactionService transactionService;
+	@Mock
+	private TransactionService transactionService;
 
-    @Mock
-    private TransactionRepository transactionRepository;
+	@Mock
+	private TransactionRepository transactionRepository;
 
-    @Mock
-    private UserRepository userRepository;
+	@Mock
+	private UserRepository userRepository;
 
-    @Mock
-    private PaymentMethodRepository paymentMethodRepository;
+	@Mock
+	private PaymentMethodRepository paymentMethodRepository;
 
-    @Mock
-    private NotificationService notificationService;
+	@Mock
+	private NotificationService notificationService;
 
-    @Mock
-    private PasswordEncoder passwordEncoder;
+	@Mock
+	private PasswordEncoder passwordEncoder;
 
-    @InjectMocks
-    private WalletServiceImpl walletService;
+	@InjectMocks
+	private WalletServiceImpl walletService;
 
-    @Test
-    void testCreateWallet_Success() {
-        // Given
-        User user = new User();
-        user.setUserId(1L);
+	@Test
+	void testCreateWallet_Success() {
+		User user = new User();
+		user.setUserId(1L);
+		walletService.createWallet(user);
 
-        // When
-        walletService.createWallet(user);
+		verify(walletRepository, times(1)).save(any(Wallet.class));
+	}
 
-        // Then
-        verify(walletRepository, times(1)).save(any(Wallet.class));
-    }
+	@Test
+	void testGetMyWallet_Success() {
+		User user = new User();
+		user.setUserId(1L);
 
-    @Test
-    void testGetMyWallet_Success() {
-        // Given
-        User user = new User();
-        user.setUserId(1L);
-        
-        Wallet wallet = new Wallet();
-        wallet.setWalletId(1L);
-        wallet.setUser(user);
-        wallet.setBalance(1000.00);
-        
-        when(userService.getCurrentUser()).thenReturn(user);
-        when(walletRepository.findByUser(user)).thenReturn(Optional.of(wallet));
+		Wallet wallet = new Wallet();
+		wallet.setWalletId(1L);
+		wallet.setUser(user);
+		wallet.setBalance(1000.00);
 
-        // When
-        Wallet result = walletService.getMyWallet();
+		when(userService.getCurrentUser()).thenReturn(user);
+		when(walletRepository.findByUser(user)).thenReturn(Optional.of(wallet));
 
-        // Then
-        assertNotNull(result);
-        assertEquals(1L, result.getWalletId());
-        assertEquals(1000.00, result.getBalance());
-        verify(userService, times(1)).getCurrentUser();
-        verify(walletRepository, times(1)).findByUser(user);
-    }
+		Wallet result = walletService.getMyWallet();
+		assertNotNull(result);
+		assertEquals(1L, result.getWalletId());
+		assertEquals(1000.00, result.getBalance());
+		verify(userService, times(1)).getCurrentUser();
+		verify(walletRepository, times(1)).findByUser(user);
+	}
 
-    @Test
-    void testGetMyWallet_NotFound_ThrowsException() {
-        // Given
-        User user = new User();
-        user.setUserId(1L);
-        
-        when(userService.getCurrentUser()).thenReturn(user);
-        when(walletRepository.findByUser(user)).thenReturn(Optional.empty());
+	@Test
+	void testGetMyWallet_NotFound_ThrowsException() {
+		User user = new User();
+		user.setUserId(1L);
 
-        // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            walletService.getMyWallet();
-        });
-        
-        assertEquals("Wallet not found", exception.getMessage());
-        verify(userService, times(1)).getCurrentUser();
-        verify(walletRepository, times(1)).findByUser(user);
-    }
+		when(userService.getCurrentUser()).thenReturn(user);
+		when(walletRepository.findByUser(user)).thenReturn(Optional.empty());
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+			walletService.getMyWallet();
+		});
 
-    
+		assertEquals("Wallet not found", exception.getMessage());
+		verify(userService, times(1)).getCurrentUser();
+		verify(walletRepository, times(1)).findByUser(user);
+	}
 
-    @Test
-    void testAddMoney_Success() {
-        // Given
-        User user = new User();
-        user.setUserId(1L);
+	@Test
+	void testAddMoney_Success() {
+		User user = new User();
+		user.setUserId(1L);
 
-        Wallet wallet = new Wallet();
-        wallet.setWalletId(1L);
-        wallet.setUser(user);
-        wallet.setBalance(1000.00);
+		Wallet wallet = new Wallet();
+		wallet.setWalletId(1L);
+		wallet.setUser(user);
+		wallet.setBalance(1000.00);
 
-        when(userService.getCurrentUser()).thenReturn(user);
-        when(walletRepository.findByUser(user)).thenReturn(Optional.of(wallet));
-        when(walletRepository.save(any(Wallet.class))).thenAnswer(inv -> inv.getArgument(0));
+		when(userService.getCurrentUser()).thenReturn(user);
+		when(walletRepository.findByUser(user)).thenReturn(Optional.of(wallet));
+		when(walletRepository.save(any(Wallet.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        // When
-        walletService.addMoney(500.00, "Test add money");
+		walletService.addMoney(500.00, "Test add money");
+		assertEquals(1500.00, wallet.getBalance(), 0.0001);
+		verify(walletRepository, times(1)).save(wallet);
+	}
 
-        // Then
-        assertEquals(1500.00, wallet.getBalance(), 0.0001);
-        verify(walletRepository, times(1)).save(wallet);
+	@Test
+	void testAddMoney_InvalidAmount_ThrowsException() {
+		Double invalidAmount = -100.00;
 
-        // ✅ these should NOT be called for your current implementation
-        verify(transactionRepository, never()).save(any());
-        verify(notificationService, never()).notify(any(), anyString(), anyString());
-    }
-    @Test
-    void testAddMoney_InvalidAmount_ThrowsException() {
-        // Given
-        Double invalidAmount = -100.00;
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+			walletService.addMoney(invalidAmount, "Test");
+		});
 
-        // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            walletService.addMoney(invalidAmount, "Test");
-        });
-        
-        assertEquals("Invalid amount", exception.getMessage());
-        verify(walletRepository, never()).save(any());
-        verify(transactionRepository, never()).save(any());
-    }
+		assertEquals("Invalid amount", exception.getMessage());
+		verify(walletRepository, never()).save(any());
+		verify(transactionRepository, never()).save(any());
+	}
 
-    @Test
-    void testSendMoney_Success() {
-        // Given
-        User sender = new User();
-        sender.setUserId(1L);
-        sender.setEmail("sender@test.com");
-        sender.setTransactionPin("encodedPin");
-        
-        User receiver = new User();
-        receiver.setUserId(2L);
-        receiver.setEmail("receiver@test.com");
-        
-        Wallet senderWallet = new Wallet();
-        senderWallet.setWalletId(1L);
-        senderWallet.setUser(sender);
-        senderWallet.setBalance(1000.00);
-        
-        Wallet receiverWallet = new Wallet();
-        receiverWallet.setWalletId(2L);
-        receiverWallet.setUser(receiver);
-        receiverWallet.setBalance(500.00);
-        
-        when(userService.getCurrentUser()).thenReturn(sender);
-        when(passwordEncoder.matches("1234", sender.getTransactionPin())).thenReturn(true);
-        when(userRepository.findByEmail("receiver@test.com")).thenReturn(Optional.of(receiver));
-        when(walletRepository.findByUser(sender)).thenReturn(Optional.of(senderWallet));
-        when(walletRepository.findByUser(receiver)).thenReturn(Optional.of(receiverWallet));
+	@Test
+	void testSendMoney_Success() {
+		User sender = new User();
+		sender.setUserId(1L);
+		sender.setEmail("sender@test.com");
+		sender.setTransactionPin("encodedPin");
 
-        // When
-        walletService.sendMoney("receiver@test.com", 300.00, "Test payment", "1234");
+		User receiver = new User();
+		receiver.setUserId(2L);
+		receiver.setEmail("receiver@test.com");
 
-        // Then
-        assertEquals(700.00, senderWallet.getBalance());
-        assertEquals(800.00, receiverWallet.getBalance());
-        verify(walletRepository, times(1)).save(senderWallet);
-        verify(walletRepository, times(1)).save(receiverWallet);
-        verify(transactionRepository, times(2)).save(any());
-        verify(notificationService, times(2)).notify(any(), anyString(), anyString());
-    }
+		Wallet senderWallet = new Wallet();
+		senderWallet.setWalletId(1L);
+		senderWallet.setUser(sender);
+		senderWallet.setBalance(1000.00);
 
-    @Test
-    void testSendMoney_InsufficientBalance_ThrowsException() {
-        // Given
-        User sender = new User();
-        sender.setUserId(1L);
-        sender.setTransactionPin("encodedPin");
-        
-        User receiver = new User();
-        receiver.setUserId(2L);
-        
-        Wallet senderWallet = new Wallet();
-        senderWallet.setWalletId(1L);
-        senderWallet.setUser(sender);
-        senderWallet.setBalance(100.00);
-        
-        when(userService.getCurrentUser()).thenReturn(sender);
-        when(passwordEncoder.matches("1234", sender.getTransactionPin())).thenReturn(true);
-        when(userRepository.findByEmail("receiver@test.com")).thenReturn(Optional.of(receiver));
-        when(walletRepository.findByUser(sender)).thenReturn(Optional.of(senderWallet));
-        when(walletRepository.findByUser(receiver)).thenReturn(Optional.of(new Wallet()));
+		Wallet receiverWallet = new Wallet();
+		receiverWallet.setWalletId(2L);
+		receiverWallet.setUser(receiver);
+		receiverWallet.setBalance(500.00);
 
-        // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            walletService.sendMoney("receiver@test.com", 300.00, "Test", "1234");
-        });
-        
-        assertEquals("Insufficient balance", exception.getMessage());
-        verify(walletRepository, never()).save(any());
-    }
+		when(userService.getCurrentUser()).thenReturn(sender);
+		when(passwordEncoder.matches("1234", sender.getTransactionPin())).thenReturn(true);
+		when(userRepository.findByEmail("receiver@test.com")).thenReturn(Optional.of(receiver));
+		when(walletRepository.findByUser(sender)).thenReturn(Optional.of(senderWallet));
+		when(walletRepository.findByUser(receiver)).thenReturn(Optional.of(receiverWallet));
 
-    @Test
-    void testSendMoney_InvalidPin_ThrowsException() {
-        // Given
-        User sender = new User();
-        sender.setUserId(1L);
-        sender.setTransactionPin("encodedPin");
-        
-        when(userService.getCurrentUser()).thenReturn(sender);
-        when(passwordEncoder.matches("wrongPin", sender.getTransactionPin())).thenReturn(false);
+		walletService.sendMoney("receiver@test.com", 300.00, "Test payment", "1234");
 
-        // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            walletService.sendMoney("receiver@test.com", 300.00, "Test", "wrongPin");
-        });
-        
-        assertEquals("Invalid Transaction PIN", exception.getMessage());
-    }
+		assertEquals(700.00, senderWallet.getBalance());
+		assertEquals(800.00, receiverWallet.getBalance());
+		verify(walletRepository, times(1)).save(senderWallet);
+		verify(walletRepository, times(1)).save(receiverWallet);
+		verify(transactionRepository, times(2)).save(any());
+		verify(notificationService, times(2)).notify(any(), anyString(), anyString());
+	}
 
-    @Test
-    void testSendMoney_SelfTransfer_ThrowsException() {
-        // Given
-        User sender = new User();
-        sender.setUserId(1L);
-        sender.setEmail("sender@test.com");
-        sender.setTransactionPin("encodedPin");
-        
-        when(userService.getCurrentUser()).thenReturn(sender);
-        when(passwordEncoder.matches("1234", sender.getTransactionPin())).thenReturn(true);
-        when(userRepository.findByEmail("sender@test.com")).thenReturn(Optional.of(sender));
+	@Test
+	void testSendMoney_InsufficientBalance_ThrowsException() {
 
-        // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            walletService.sendMoney("sender@test.com", 300.00, "Test", "1234");
-        });
-        
-        assertEquals("Cannot send money to yourself", exception.getMessage());
-    }
+		User sender = new User();
+		sender.setUserId(1L);
+		sender.setTransactionPin("encodedPin");
 
-    @Test
-    void testAddMoneyViaCard_Success() {
-        // Given
-        User user = new User();
-        user.setUserId(1L);
-        
-        PaymentMethod card = new PaymentMethod();
-        card.setMethodId(1L);
-        card.setUser(user);
-        card.setAvailableBalance(1000.00);
-        card.setCardNumber("1234567890123456");
-        
-        Wallet wallet = new Wallet();
-        wallet.setWalletId(1L);
-        wallet.setUser(user);
-        wallet.setBalance(500.00);
-        
-        when(userService.getCurrentUser()).thenReturn(user);
-        when(paymentMethodRepository.findById(1L)).thenReturn(Optional.of(card));
-        when(walletRepository.findByUser(user)).thenReturn(Optional.of(wallet));
+		User receiver = new User();
+		receiver.setUserId(2L);
 
-        // When
-        walletService.addMoneyViaCard(1L, 300.00);
+		Wallet senderWallet = new Wallet();
+		senderWallet.setWalletId(1L);
+		senderWallet.setUser(sender);
+		senderWallet.setBalance(100.00);
 
-        // Then
-        assertEquals(700.00, card.getAvailableBalance());
-        assertEquals(800.00, wallet.getBalance());
-        verify(paymentMethodRepository, times(1)).save(card);
-        verify(walletRepository, times(1)).save(wallet);
-        verify(transactionRepository, times(1)).save(any());
-    }
+		when(userService.getCurrentUser()).thenReturn(sender);
+		when(passwordEncoder.matches("1234", sender.getTransactionPin())).thenReturn(true);
+		when(userRepository.findByEmail("receiver@test.com")).thenReturn(Optional.of(receiver));
+		when(walletRepository.findByUser(sender)).thenReturn(Optional.of(senderWallet));
+		when(walletRepository.findByUser(receiver)).thenReturn(Optional.of(new Wallet()));
 
-    @Test
-    void testDebitUser_Success() {
-        // Given
-        User user = new User();
-        user.setUserId(1L);
-        
-        Wallet wallet = new Wallet();
-        wallet.setWalletId(1L);
-        wallet.setUser(user);
-        wallet.setBalance(1000.00);
-        
-        when(walletRepository.findByUser(user)).thenReturn(Optional.of(wallet));
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+			walletService.sendMoney("receiver@test.com", 300.00, "Test", "1234");
+		});
 
-        // When
-        walletService.debitUser(user, 300.00, "Test debit");
+		assertEquals("Insufficient balance", exception.getMessage());
+		verify(walletRepository, never()).save(any());
+	}
 
-        // Then
-        assertEquals(700.00, wallet.getBalance());
-        verify(walletRepository, times(1)).save(wallet);
-        verify(transactionRepository, times(1)).save(any());
-    }
+	@Test
+	void testSendMoney_InvalidPin_ThrowsException() {
 
-    @Test
-    void testCreditUser_Success() {
-        // Given
-        User user = new User();
-        user.setUserId(1L);
-        
-        Wallet wallet = new Wallet();
-        wallet.setWalletId(1L);
-        wallet.setUser(user);
-        wallet.setBalance(1000.00);
-        
-        when(walletRepository.findByUser(user)).thenReturn(Optional.of(wallet));
+		User sender = new User();
+		sender.setUserId(1L);
+		sender.setTransactionPin("encodedPin");
 
-        // When
-        walletService.creditUser(user, 500.00, "Test credit");
+		when(userService.getCurrentUser()).thenReturn(sender);
+		when(passwordEncoder.matches("wrongPin", sender.getTransactionPin())).thenReturn(false);
 
-        // Then
-        assertEquals(1500.00, wallet.getBalance());
-        verify(walletRepository, times(1)).save(wallet);
-        verify(transactionRepository, times(1)).save(any());
-    }
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+			walletService.sendMoney("receiver@test.com", 300.00, "Test", "wrongPin");
+		});
+
+		assertEquals("Invalid Transaction PIN", exception.getMessage());
+	}
+
+	@Test
+	void testSendMoney_SelfTransfer_ThrowsException() {
+
+		User sender = new User();
+		sender.setUserId(1L);
+		sender.setEmail("sender@test.com");
+		sender.setTransactionPin("encodedPin");
+
+		when(userService.getCurrentUser()).thenReturn(sender);
+		when(passwordEncoder.matches("1234", sender.getTransactionPin())).thenReturn(true);
+		when(userRepository.findByEmail("sender@test.com")).thenReturn(Optional.of(sender));
+
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+			walletService.sendMoney("sender@test.com", 300.00, "Test", "1234");
+		});
+
+		assertEquals("Cannot send money to yourself", exception.getMessage());
+	}
+
+	@Test
+	void testAddMoneyViaCard_Success() {
+		User user = new User();
+		user.setUserId(1L);
+
+		PaymentMethod card = new PaymentMethod();
+		card.setMethodId(1L);
+		card.setUser(user);
+		card.setAvailableBalance(1000.00);
+		card.setCardNumber("1234567890123456");
+
+		Wallet wallet = new Wallet();
+		wallet.setWalletId(1L);
+		wallet.setUser(user);
+		wallet.setBalance(500.00);
+
+		when(userService.getCurrentUser()).thenReturn(user);
+		when(paymentMethodRepository.findById(1L)).thenReturn(Optional.of(card));
+		when(walletRepository.findByUser(user)).thenReturn(Optional.of(wallet));
+		walletService.addMoneyViaCard(1L, 300.00);
+
+		assertEquals(700.00, card.getAvailableBalance());
+		assertEquals(800.00, wallet.getBalance());
+		verify(paymentMethodRepository, times(1)).save(card);
+		verify(walletRepository, times(1)).save(wallet);
+		verify(transactionRepository, times(1)).save(any());
+	}
+
+	@Test
+	void testDebitUser_Success() {
+		User user = new User();
+		user.setUserId(1L);
+
+		Wallet wallet = new Wallet();
+		wallet.setWalletId(1L);
+		wallet.setUser(user);
+		wallet.setBalance(1000.00);
+
+		when(walletRepository.findByUser(user)).thenReturn(Optional.of(wallet));
+		walletService.debitUser(user, 300.00, "Test debit");
+		assertEquals(700.00, wallet.getBalance());
+		verify(walletRepository, times(1)).save(wallet);
+		verify(transactionRepository, times(1)).save(any());
+	}
+
+	@Test
+	void testCreditUser_Success() {
+		User user = new User();
+		user.setUserId(1L);
+
+		Wallet wallet = new Wallet();
+		wallet.setWalletId(1L);
+		wallet.setUser(user);
+		wallet.setBalance(1000.00);
+
+		when(walletRepository.findByUser(user)).thenReturn(Optional.of(wallet));
+		walletService.creditUser(user, 500.00, "Test credit");
+		assertEquals(1500.00, wallet.getBalance());
+		verify(walletRepository, times(1)).save(wallet);
+		verify(transactionRepository, times(1)).save(any());
+	}
 }

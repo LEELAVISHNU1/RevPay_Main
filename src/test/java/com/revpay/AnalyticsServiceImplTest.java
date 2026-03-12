@@ -37,7 +37,7 @@ public class AnalyticsServiceImplTest {
 
     @Test
     public void testGetBusinessSummary_Success() {
-        // Given
+
         User user = new User();
         user.setUserId(1L);
         
@@ -50,10 +50,8 @@ public class AnalyticsServiceImplTest {
         when(transactionRepository.totalSent(wallet)).thenReturn(3000.00);
         when(invoiceRepository.totalRevenue(user)).thenReturn(7500.00);
 
-        // When
         BusinessSummaryResponse response = analyticsService.getBusinessSummary();
 
-        // Then
         assertNotNull(response);
         assertEquals(5000.00, response.getWalletBalance());
         assertEquals(10000.00, response.getTotalReceived());
@@ -69,7 +67,7 @@ public class AnalyticsServiceImplTest {
 
     @Test
     public void testGetBusinessSummary_WhenNoTransactions_ReturnsZero() {
-        // Given
+
         User user = new User();
         user.setUserId(1L);
         
@@ -82,10 +80,8 @@ public class AnalyticsServiceImplTest {
         when(transactionRepository.totalSent(wallet)).thenReturn(0.0);
         when(invoiceRepository.totalRevenue(user)).thenReturn(0.0);
 
-        // When
         BusinessSummaryResponse response = analyticsService.getBusinessSummary();
 
-        // Then
         assertNotNull(response);
         assertEquals(5000.00, response.getWalletBalance());
         assertEquals(0.0, response.getTotalReceived());

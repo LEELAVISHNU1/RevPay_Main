@@ -14,7 +14,7 @@ public class Invoice {
 
 	@ManyToOne
 	@JoinColumn(name = "business_id")
-	private User business; // creator
+	private User business;
 
 	@ManyToOne
 	@JoinColumn(name = "customer_id")
@@ -23,12 +23,11 @@ public class Invoice {
 	private Double amount;
 	private String description;
 
-	private String status; // PENDING PAID CANCELLED
+	private String status;
 
 	private LocalDate dueDate;
 	private LocalDateTime createdAt;
 
-	// getters setters
 	public Long getInvoiceId() {
 		return invoiceId;
 	}

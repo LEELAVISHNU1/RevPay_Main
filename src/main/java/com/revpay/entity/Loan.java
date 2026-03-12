@@ -22,15 +22,13 @@ public class Loan {
 	private Double emiAmount;
 	private Double remainingAmount;
 
-	private String status; // PENDING APPROVED REJECTED CLOSED
+	private String status;
 
 	private LocalDateTime createdAt;
 
 	private String documentName;
 	private String documentType;
 	private String documentPath;
-
-	// getters setters
 
 	public String getDocumentName() {
 		return documentName;

@@ -21,7 +21,6 @@ public class Notification {
 
 	private LocalDateTime createdAt;
 
-	// getters setters
 	public Long getNotificationId() {
 		return notificationId;
 	}

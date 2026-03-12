@@ -1,13 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN">
-    <Appenders>
-        <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n"/>
-        </Console>
-    </Appenders>
-    <Loggers>
-        <Root level="info">
-            <AppenderRef ref="Console"/>
-        </Root>
-    </Loggers>
+
+	<Properties>
+		<Property name="LOG_PATTERN">
+			%d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n
+		</Property>
+	</Properties>
+
+	<Appenders>
+
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout pattern="${LOG_PATTERN}" />
+		</Console>
+
+		<File name="FileLogger"
+			fileName="logs/revpay.log"
+			append="true">
+			<PatternLayout pattern="${LOG_PATTERN}" />
+		</File>
+
+	</Appenders>
+
+	<Loggers>
+
+		<Logger name="com.revpay.service" level="debug" additivity="false">
+			<AppenderRef ref="FileLogger" />
+		</Logger>
+
+		<Logger name="org.hibernate.SQL" level="debug" additivity="false">
+			<AppenderRef ref="Console" />
+		</Logger>
+
+		<Root level="info">
+			<AppenderRef ref="Console" />
+		</Root>
+
+	</Loggers>
+
 </Configuration>

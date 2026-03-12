@@ -1,6 +1,4 @@
-/* =========================================================
-   PASSWORD TOGGLE
-========================================================= */
+
 
 function togglePassword(inputId, iconId) {
     const input = document.getElementById(inputId);
@@ -17,9 +15,7 @@ function togglePassword(inputId, iconId) {
     }
 }
 
-/* =========================================================
-   DOM READY
-========================================================= */
+
 
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -81,9 +77,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-/* =========================================================
-   ERROR HANDLING FUNCTIONS
-========================================================= */
 
 function showError(input, message) {
 
