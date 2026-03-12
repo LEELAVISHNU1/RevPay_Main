@@ -18,191 +18,96 @@ import com.revpay.service.interfaces.UserService;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/**
- * Service implementation for handling user transactions.
- *
- * Responsibilities:
- * - Fetch paginated transactions
- * - Search transactions with filters
- * - Create new transaction record
- */
 @Service
 public class TransactionServiceImpl implements TransactionService {
 
-    // Logger for tracking transaction-related activities
-    private static final Logger logger =
-            LogManager.getLogger(TransactionServiceImpl.class);
+	private static final Logger logger = LogManager.getLogger(TransactionServiceImpl.class);
 
-    @Autowired
-    private WalletRepository walletRepository;
+	@Autowired
+	private WalletRepository walletRepository;
 
-    @Autowired
-    private TransactionRepository transactionRepository;
+	@Autowired
+	private TransactionRepository transactionRepository;
 
-    @Autowired
-    private UserService userService;
+	@Autowired
+	private UserService userService;
 
-    // ================= MY TRANSACTIONS =================
+	// Returns paginated transactions for the logged-in user
+	@Override
+	public PageResponse<?> myTransactions(int page, int size) {
 
-    /**
-     * Returns paginated transactions of currently logged-in user.
-     *
-     * Flow:
-     * 1. Get current user
-     * 2. Fetch user's wallet
-     * 3. Fetch transactions sorted by latest first
-     * 4. Return PageResponse with content + pagination info
-     */
-    @Override
-    public PageResponse<?> myTransactions(int page, int size) {
+		User currentUser = userService.getCurrentUser();
 
-        User currentUser = userService.getCurrentUser();
+		logger.info("Fetching transactions for user: {} | page={} size={}", currentUser.getEmail(), page, size);
 
-        logger.info("Fetching transactions for user: {} | page={} size={}",
-                currentUser.getEmail(), page, size);
+		Wallet wallet = walletRepository.findByUser(currentUser)
+				.orElseThrow(() -> new RuntimeException("Wallet not found"));
 
-        // Fetch wallet of logged-in user
-        Wallet wallet = walletRepository.findByUser(currentUser)
-                .orElseThrow(() -> {
-                    logger.error("Wallet not found for user: {}", currentUser.getEmail());
-                    return new RuntimeException("Wallet not found");
-                });
+		Pageable pageable = PageRequest.of(page, size);
 
-        // Create pagination object
-        Pageable pageable = PageRequest.of(page, size);
+		Page<Transaction> transactionPage = transactionRepository.findByWalletOrderByCreatedAtDesc(wallet, pageable);
 
-        // Fetch transactions sorted by createdAt descending
-        Page<Transaction> transactionPage =
-                transactionRepository.findByWalletOrderByCreatedAtDesc(wallet, pageable);
+		return new PageResponse<>(transactionPage.getContent(), transactionPage.getNumber(),
+				transactionPage.getTotalPages(), transactionPage.getTotalElements());
+	}
 
-        // Return wrapped response
-        return new PageResponse<>(
-                transactionPage.getContent(),
-                transactionPage.getNumber(),
-                transactionPage.getTotalPages(),
-                transactionPage.getTotalElements()
-        );
-    }
+	// Searches transactions using filters like type and date range
+	@Override
+	public PageResponse<?> searchTransactions(int page, int size, String type, String from, String to, String sort) {
 
-    // ================= SEARCH TRANSACTIONS =================
+		User currentUser = userService.getCurrentUser();
 
-    /**
-     * Searches transactions using optional filters:
-     * - Transaction type (SEND / RECEIVE)
-     * - From date
-     * - To date
-     * - Sorting
-     *
-     * Supports pagination.
-     */
-    @Override
-    public PageResponse<?> searchTransactions(
-            int page,
-            int size,
-            String type,
-            String from,
-            String to,
-            String sort) {
+		logger.info("Searching transactions for user: {}", currentUser.getEmail());
 
-        User currentUser = userService.getCurrentUser();
+		Wallet wallet = walletRepository.findByUser(currentUser)
+				.orElseThrow(() -> new RuntimeException("Wallet not found"));
 
-        logger.info("Searching transactions for user: {}", currentUser.getEmail());
+		Sort sorting = Sort.by("createdAt").descending();
 
-        // Fetch wallet
-        Wallet wallet = walletRepository.findByUser(currentUser)
-                .orElseThrow(() -> {
-                    logger.error("Wallet not found for user: {}", currentUser.getEmail());
-                    return new RuntimeException("Wallet not found");
-                });
+		if (sort != null && sort.contains(",")) {
+			String[] parts = sort.split(",");
+			sorting = Sort.by(Sort.Direction.fromString(parts[1]), parts[0]);
+		}
 
-        // Default sorting: latest first
-        Sort sorting = Sort.by("createdAt").descending();
+		Pageable pageable = PageRequest.of(page, size, sorting);
 
-        // If custom sorting is provided (format: field,direction)
-        if (sort != null && sort.contains(",")) {
-            String[] parts = sort.split(",");
-            sorting = Sort.by(Sort.Direction.fromString(parts[1]), parts[0]);
-        }
+		LocalDateTime fromDate = null;
+		LocalDateTime toDate = null;
 
-        Pageable pageable = PageRequest.of(page, size, sorting);
+		if (from != null && !from.isEmpty())
+			fromDate = LocalDate.parse(from).atStartOfDay();
 
-        // Convert date strings to LocalDateTime
-        LocalDateTime fromDate = null;
-        LocalDateTime toDate = null;
+		if (to != null && !to.isEmpty())
+			toDate = LocalDate.parse(to).atTime(23, 59, 59);
 
-        if (from != null && !from.isEmpty())
-            fromDate = LocalDate.parse(from).atStartOfDay();
+		Page<Transaction> result = transactionRepository.searchTransactions(wallet, type, fromDate, toDate, pageable);
 
-        if (to != null && !to.isEmpty())
-            toDate = LocalDate.parse(to).atTime(23, 59, 59);
+		return new PageResponse<>(result.getContent(), result.getNumber(), result.getTotalPages(),
+				result.getTotalElements());
+	}
 
-        // Perform filtered search
-        Page<Transaction> result =
-                transactionRepository.searchTransactions(
-                        wallet, type, fromDate, toDate, pageable
-                );
+	// Creates a transaction record for wallet activity
+	@Override
+	public void createTransaction(User user, Double amount, String description) {
 
-        logger.info("Transaction search completed. Results count: {}",
-                result.getTotalElements());
+		logger.info("Creating transaction for user: {} | amount={}", user.getEmail(), amount);
 
-        return new PageResponse<>(
-                result.getContent(),
-                result.getNumber(),
-                result.getTotalPages(),
-                result.getTotalElements()
-        );
-    }
+		Wallet wallet = walletRepository.findByUser(user).orElseThrow(() -> new RuntimeException("Wallet not found"));
 
-    // ================= CREATE TRANSACTION =================
+		Transaction t = new Transaction();
+		t.setWallet(wallet);
+		t.setAmount(amount);
 
-    /**
-     * Creates a new transaction record for a user.
-     *
-     * Used internally when:
-     * - Sending money
-     * - Receiving money
-     * - Paying invoice
-     * - Loan credit
-     * - EMI payment
-     *
-     * Logic:
-     * - If amount < 0 → SEND transaction
-     * - If amount > 0 → RECEIVE transaction
-     */
-    @Override
-    public void createTransaction(User user, Double amount, String description) {
+		if (amount < 0) {
+			t.setTxnType("SEND");
+		} else {
+			t.setTxnType("RECEIVE");
+		}
 
-        logger.info("Creating transaction for user: {} | amount={}",
-                user.getEmail(), amount);
+		t.setBalanceAfterTxn(wallet.getBalance());
+		t.setRemark(description);
+		t.setCreatedAt(LocalDateTime.now());
 
-        // Fetch wallet
-        Wallet wallet = walletRepository.findByUser(user)
-                .orElseThrow(() -> {
-                    logger.error("Wallet not found for user: {}", user.getEmail());
-                    return new RuntimeException("Wallet not found");
-                });
-
-        // Create new transaction
-        Transaction t = new Transaction();
-        t.setWallet(wallet);
-        t.setAmount(amount);
-
-        // Determine transaction type
-        if (amount < 0) {
-            t.setTxnType("SEND");
-        } else {
-            t.setTxnType("RECEIVE");
-        }
-
-        // Store balance after transaction
-        t.setBalanceAfterTxn(wallet.getBalance());
-
-        t.setRemark(description);
-        t.setCreatedAt(LocalDateTime.now());
-
-        // Save transaction
-        transactionRepository.save(t);
-
-        logger.info("Transaction saved successfully for user: {}", user.getEmail());
-    }
+		transactionRepository.save(t);
+	}
 }

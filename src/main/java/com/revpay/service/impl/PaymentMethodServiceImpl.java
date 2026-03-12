@@ -16,19 +16,9 @@ import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
-/**
- * Service implementation for managing payment methods (Cards).
- *
- * Responsibilities:
- * - Add new card
- * - Validate card details
- * - Fetch user cards
- * - Delete card securely
- */
 @Service
 public class PaymentMethodServiceImpl implements PaymentMethodService {
 
-    // Logger to track card-related operations
     private static final Logger logger =
             LogManager.getLogger(PaymentMethodServiceImpl.class);
 
@@ -38,49 +28,32 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
     @Autowired
     private UserService userService;
 
-    /**
-     * Adds a new card for the currently logged-in user.
-     *
-     * Validations performed:
-     * - Card number must be 16 digits
-     * - CVV must be 3 digits
-     * - Expiry format must be MM/YY
-     * - Expiry must not be in the past
-     * - Card holder name must not be empty
-     *
-     * If validation passes:
-     * - Card is saved with default balance (50000.0)
-     */
+    // Adds a new card after validating number, CVV, expiry, and holder name
     @Override
     public void addCard(String number, String holder, String expiry, String cvv) {
 
         logger.info("Attempting to add new card");
 
-        // Validate card number (must be exactly 16 digits)
         if (!number.matches("\\d{16}")) {
             logger.warn("Invalid card number format");
             throw new RuntimeException("Invalid card number");
         }
 
-        // Validate CVV (must be exactly 3 digits)
         if (!cvv.matches("\\d{3}")) {
             logger.warn("Invalid CVV format");
             throw new RuntimeException("Invalid CVV");
         }
 
-        // Validate expiry format (MM/YY)
         if (!expiry.matches("(0[1-9]|1[0-2])/\\d{2}")) {
             logger.warn("Invalid expiry format");
             throw new RuntimeException("Invalid expiry format MM/YY");
         }
 
-        // Validate card holder name
         if (holder == null || holder.isBlank()) {
             logger.warn("Card holder name missing");
             throw new RuntimeException("Card holder name required");
         }
 
-        // Validate expiry date is not in the past
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/yy");
             YearMonth expiryDate = YearMonth.parse(expiry, formatter);
@@ -96,38 +69,25 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
             throw new RuntimeException("Invalid expiry format MM/YY");
         }
 
-        // Get currently logged-in user
         User user = userService.getCurrentUser();
 
         logger.info("Saving card for user: {}", user.getEmail());
 
-        // Create and populate PaymentMethod entity
         PaymentMethod card = new PaymentMethod();
         card.setUser(user);
         card.setCardNumber(number);
         card.setCardHolderName(holder);
         card.setExpiry(expiry);
         card.setCvv(cvv);
-
-        // Default available balance for demo purposes
         card.setAvailableBalance(50000.0);
-
         card.setCreatedAt(LocalDateTime.now());
 
-        // Save card to database
         paymentMethodRepository.save(card);
 
         logger.info("Card added successfully for user: {}", user.getEmail());
     }
 
-    /**
-     * Returns all cards belonging to the currently logged-in user.
-     *
-     * Used in:
-     * - Cards page
-     * - Send money page
-     * - Invoice payment page
-     */
+    // Returns all cards belonging to the logged-in user
     @Override
     public List<PaymentMethod> myCards() {
 
@@ -138,16 +98,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
         return paymentMethodRepository.findByUser(user);
     }
 
-    /**
-     * Deletes a card by ID.
-     *
-     * Security checks:
-     * - Card must exist
-     * - Card must belong to currently logged-in user
-     *
-     * Prevents:
-     * - Deleting someone else's card
-     */
+    // Deletes a card only if it belongs to the logged-in user
     @Override
     public void deleteCard(Long id) {
 
@@ -155,20 +106,17 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
 
         logger.warn("User {} attempting to delete card id: {}", user.getEmail(), id);
 
-        // Fetch card from DB
         PaymentMethod card = paymentMethodRepository.findById(id)
                 .orElseThrow(() -> {
                     logger.error("Card not found with id: {}", id);
                     return new RuntimeException("Card not found");
                 });
 
-        // Ensure card belongs to logged-in user
         if (!card.getUser().getUserId().equals(user.getUserId())) {
             logger.error("Unauthorized card deletion attempt by user: {}", user.getEmail());
             throw new RuntimeException("Unauthorized");
         }
 
-        // Delete card
         paymentMethodRepository.delete(card);
 
         logger.info("Card deleted successfully by user: {}", user.getEmail());

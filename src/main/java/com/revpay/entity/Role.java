@@ -14,6 +14,9 @@ public class Role {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long roleId;
+	
+	@Column(unique = true, nullable = false)
+	private String roleName;
 
 	public Long getRoleId() {
 		return roleId;
@@ -30,8 +33,5 @@ public class Role {
 	public void setRoleName(String roleName) {
 		this.roleName = roleName;
 	}
-
-	@Column(unique = true, nullable = false)
-	private String roleName; // PERSONAL, BUSINESS, ADMIN
 
 }

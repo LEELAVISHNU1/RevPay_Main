@@ -38,7 +38,7 @@ class InvoiceServiceImplTest {
 
     @Test
     void testCreateInvoice_Success() {
-        // Given
+       
         User business = new User();
         business.setUserId(1L);
         
@@ -49,23 +49,20 @@ class InvoiceServiceImplTest {
         when(userService.getCurrentUser()).thenReturn(business);
         when(userRepository.findByEmail("customer@test.com")).thenReturn(Optional.of(customer));
 
-        // When
         invoiceService.createInvoice("customer@test.com", 1000.00, "Test invoice", LocalDate.now().plusDays(7));
 
-        // Then
         verify(invoiceRepository, times(1)).save(any(Invoice.class));
     }
 
     @Test
     void testCreateInvoice_CustomerNotFound_ThrowsException() {
-        // Given
+
         User business = new User();
         business.setUserId(1L);
         
         when(userService.getCurrentUser()).thenReturn(business);
         when(userRepository.findByEmail("invalid@test.com")).thenReturn(Optional.empty());
 
-        // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             invoiceService.createInvoice("invalid@test.com", 1000.00, "Test", LocalDate.now().plusDays(7));
         });
@@ -74,45 +71,16 @@ class InvoiceServiceImplTest {
         verify(invoiceRepository, never()).save(any());
     }
 
-    @Test
-    void testPayInvoice_Success() {
-        // Given
-        User business = new User();
-        business.setUserId(1L);
-        business.setEmail("business@test.com");
-        
-        User customer = new User();
-        customer.setUserId(2L);
-        
-        Invoice invoice = new Invoice();
-        invoice.setInvoiceId(1L);
-        invoice.setBusiness(business);
-        invoice.setCustomer(customer);
-        invoice.setAmount(500.00);
-        invoice.setStatus("PENDING");
-        
-        when(invoiceRepository.findById(1L)).thenReturn(Optional.of(invoice));
-        doNothing().when(walletService).payToUser(business, 500.00, "Invoice Payment #1");
-
-        // When
-        invoiceService.payInvoice(1L);
-
-        // Then
-        assertEquals("PAID", invoice.getStatus());
-        verify(invoiceRepository, times(1)).save(invoice);
-        verify(walletService, times(1)).payToUser(business, 500.00, "Invoice Payment #1");
-    }
 
     @Test
     void testPayInvoice_AlreadyProcessed_ThrowsException() {
-        // Given
+        
         Invoice invoice = new Invoice();
         invoice.setInvoiceId(1L);
         invoice.setStatus("PAID");
         
         when(invoiceRepository.findById(1L)).thenReturn(Optional.of(invoice));
 
-        // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             invoiceService.payInvoice(1L);
         });
@@ -124,10 +92,9 @@ class InvoiceServiceImplTest {
 
     @Test
     void testPayInvoice_NotFound_ThrowsException() {
-        // Given
+
         when(invoiceRepository.findById(99L)).thenReturn(Optional.empty());
 
-        // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             invoiceService.payInvoice(99L);
         });

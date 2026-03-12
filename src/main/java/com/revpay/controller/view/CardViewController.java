@@ -16,50 +16,26 @@ import com.revpay.service.interfaces.WalletService;
 @RequestMapping("/cards")
 public class CardViewController {
 
-    // Service used to manage card-related operations
     @Autowired
     private PaymentMethodService paymentMethodService;
 
-    // Service used to handle wallet-related operations
     @Autowired
     private WalletService walletService;
 
-    /**
-     * Handles GET request to "/cards"
-     * 
-     * Function:
-     * - Fetches all cards linked to the currently logged-in user.
-     * - Adds the list of cards to the model.
-     * - Returns the "cards.html" view.
-     */
+    // Loads all cards of the logged-in user and displays them
     @GetMapping
     public String myCards(Model model) {
         model.addAttribute("cards", paymentMethodService.myCards());
         return "cards";
     }
 
-    /**
-     * Handles GET request to "/cards/add"
-     * 
-     * Function:
-     * - Simply returns the add-card page.
-     * - Displays form to add a new payment card.
-     */
+    // Opens the page to add a new card
     @GetMapping("/add")
     public String addCardPage() {
         return "add-card";
     }
 
-    /**
-     * Handles POST request to "/cards/add"
-     * 
-     * Function:
-     * - Receives card details from the form.
-     * - Calls service layer to save the card.
-     * - If successful → shows success message.
-     * - If exception occurs → shows error message.
-     * - Redirects back to add-card page.
-     */
+    // Saves a new card and shows success or error message
     @PostMapping("/add")
     public String addCard(@RequestParam String cardNumber,
                           @RequestParam String holderName,
@@ -68,75 +44,42 @@ public class CardViewController {
                           RedirectAttributes ra) {
 
         try {
-            // Calls service to validate and store card details
             paymentMethodService.addCard(cardNumber, holderName, expiry, cvv);
-
-            // Flash success message
             ra.addFlashAttribute("success", "Card added successfully");
 
         } catch (Exception e) {
-
-            // Flash error message if validation or saving fails
             ra.addFlashAttribute("error", e.getMessage());
         }
 
-        // Redirect back to add-card page
         return "redirect:/cards/add";
     }
 
-    /**
-     * Handles POST request to "/cards/deposit"
-     * 
-     * Function:
-     * - Takes card ID and deposit amount.
-     * - Transfers money from selected card to wallet.
-     * - If successful → shows success message.
-     * - If failure → shows error message.
-     * - Redirects user to dashboard.
-     */
+    // Adds money to wallet using the selected card
     @PostMapping("/deposit")
     public String deposit(@RequestParam Long cardId,
                           @RequestParam Double amount,
                           RedirectAttributes ra) {
 
         try {
-            // Adds money to wallet using selected card
             walletService.addMoneyViaCard(cardId, amount);
-
-            // Success message
             ra.addFlashAttribute("success", "Money added via card");
 
         } catch (Exception e) {
-
-            // Error message if insufficient balance or invalid card
             ra.addFlashAttribute("error", e.getMessage());
         }
 
         return "redirect:/dashboard";
     }
 
-    /**
-     * Handles POST request to "/cards/delete/{id}"
-     * 
-     * Function:
-     * - Deletes a card using its ID.
-     * - Ensures only the owner can delete it (handled in service layer).
-     * - Shows success or error message.
-     * - Redirects back to cards page.
-     */
+    // Deletes a card by its ID and redirects to cards page
     @PostMapping("/delete/{id}")
     public String delete(@PathVariable Long id, RedirectAttributes ra) {
 
         try {
-            // Calls service to delete the selected card
             paymentMethodService.deleteCard(id);
-
-            // Success message
             ra.addFlashAttribute("success", "Card removed");
 
         } catch (Exception e) {
-
-            // Error message if unauthorized or card not found
             ra.addFlashAttribute("error", e.getMessage());
         }
 

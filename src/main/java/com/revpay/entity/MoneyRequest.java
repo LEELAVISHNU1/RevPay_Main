@@ -12,16 +12,16 @@ public class MoneyRequest {
 	private Long requestId;
 
 	@ManyToOne
-	@JoinColumn(name = "sender_id") // person who will pay
+	@JoinColumn(name = "sender_id")
 	private User sender;
 
 	@ManyToOne
-	@JoinColumn(name = "receiver_id") // person requesting
+	@JoinColumn(name = "receiver_id")
 	private User receiver;
 
 	private Double amount;
 
-	private String status; // PENDING ACCEPTED DECLINED
+	private String status;
 
 	private String note;
 
@@ -82,7 +82,5 @@ public class MoneyRequest {
 	public void setCreatedAt(LocalDateTime createdAt) {
 		this.createdAt = createdAt;
 	}
-
-	// getters setters
 
 }

@@ -10,33 +10,16 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 public class RequestViewController {
 
-    // Service responsible for handling money request logic
     @Autowired
     private RequestService requestService;
 
-    /**
-     * Handles GET request to "/request"
-     *
-     * Function:
-     * - Displays the request money page.
-     * - Allows user to enter email, amount, and note.
-     * - Returns "request-money.html" view.
-     */
+    // Opens the page where a user can request money from another user
     @GetMapping("/request")
     public String requestPage() {
         return "request-money";
     }
 
-    /**
-     * Handles POST request to "/request"
-     *
-     * Function:
-     * - Receives receiver email, amount, and note.
-     * - Calls service layer to create money request.
-     * - On success → shows success message.
-     * - On failure → shows error message.
-     * - Redirects to dashboard.
-     */
+    // Creates a money request and redirects to dashboard with status message
     @PostMapping("/request")
     public String createRequest(@RequestParam String email,
                                 @RequestParam Double amount,
@@ -44,7 +27,6 @@ public class RequestViewController {
                                 RedirectAttributes ra) {
 
         try {
-            // Create a new money request
             requestService.createRequest(email, amount, note);
 
             ra.addFlashAttribute("success", "Money request sent successfully");
@@ -57,14 +39,7 @@ public class RequestViewController {
         return "redirect:/dashboard";
     }
 
-    /**
-     * Handles GET request to "/requests"
-     *
-     * Function:
-     * - Fetches all incoming money requests for logged-in user.
-     * - Adds them to model.
-     * - Returns "incoming-requests.html" view.
-     */
+    // Shows all incoming money requests for the logged-in user
     @GetMapping("/requests")
     public String incomingRequests(Model model) {
 
@@ -73,15 +48,7 @@ public class RequestViewController {
         return "incoming-requests";
     }
 
-    /**
-     * Handles POST request to "/requests/accept/{id}"
-     *
-     * Function:
-     * - Accepts a specific money request using its ID.
-     * - Transfers money from current user to requester.
-     * - Shows success or error message.
-     * - Redirects back to incoming requests page.
-     */
+    // Accepts a request and transfers money to the requester
     @PostMapping("/requests/accept/{id}")
     public String accept(@PathVariable Long id, RedirectAttributes ra) {
 
@@ -97,15 +64,7 @@ public class RequestViewController {
         return "redirect:/requests";
     }
 
-    /**
-     * Handles POST request to "/requests/reject/{id}"
-     *
-     * Function:
-     * - Rejects a specific money request.
-     * - Updates request status to rejected.
-     * - Shows success or error message.
-     * - Redirects back to incoming requests page.
-     */
+    // Rejects a request and updates its status
     @PostMapping("/requests/reject/{id}")
     public String reject(@PathVariable Long id, RedirectAttributes ra) {
 

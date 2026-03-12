@@ -32,14 +32,6 @@ public class User {
 	@Column(nullable = false)
 	private String transactionPin;
 
-	public String getTransactionPin() {
-		return transactionPin;
-	}
-
-	public void setTransactionPin(String transactionPin) {
-		this.transactionPin = transactionPin;
-	}
-
 	private String accountStatus;
 
 	private LocalDateTime createdAt;
@@ -50,6 +42,14 @@ public class User {
 
 	@Column(nullable = false)
 	private String favoriteColor;
+	
+	public String getTransactionPin() {
+		return transactionPin;
+	}
+
+	public void setTransactionPin(String transactionPin) {
+		this.transactionPin = transactionPin;
+	}
 
 	public String getFavoriteColor() {
 		return favoriteColor;

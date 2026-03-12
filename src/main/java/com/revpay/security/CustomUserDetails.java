@@ -7,55 +7,21 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
-/**
- * Custom implementation of Spring Security's UserDetails.
- *
- * Purpose:
- * - Acts as a bridge between your application's User entity
- *   and Spring Security authentication system.
- * - Wraps the User object.
- * - Provides user information to Spring Security during login.
- */
 public class CustomUserDetails implements UserDetails {
 
-    // The actual User entity from database
     private final User user;
 
-    /**
-     * Constructor
-     *
-     * Function:
-     * - Accepts User entity and assigns it to this class.
-     * - Used during authentication process.
-     */
+    // Stores the authenticated user entity for Spring Security
     public CustomUserDetails(User user) {
         this.user = user;
     }
 
-    /**
-     * Returns the wrapped User entity.
-     *
-     * Function:
-     * - Allows access to full User object when needed.
-     */
+    // Returns the wrapped User entity
     public User getUser() {
         return user;
     }
 
-    /**
-     * ⭐ VERY IMPORTANT FOR ROLE-BASED SECURITY
-     *
-     * Function:
-     * - Returns user's authorities (roles).
-     * - Spring Security expects roles to start with "ROLE_".
-     * - Example:
-     *      If roleName = "ADMIN"
-     *      Authority becomes = "ROLE_ADMIN"
-     *
-     * Used for:
-     * - @PreAuthorize
-     * - Role-based URL restrictions
-     */
+    // Provides the user's role as a Spring Security authority
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(
@@ -63,67 +29,37 @@ public class CustomUserDetails implements UserDetails {
         );
     }
 
-    /**
-     * Returns user's encoded password.
-     *
-     * Used by Spring Security during authentication.
-     */
+    // Returns the encoded password for authentication
     @Override
     public String getPassword() {
         return user.getPassword();
     }
 
-    /**
-     * Returns username used for login.
-     *
-     * Here:
-     * - Email is used as username.
-     * - Also used as JWT subject.
-     */
+    // Returns email as the username for login
     @Override
     public String getUsername() {
         return user.getEmail();
     }
 
-    /**
-     * Indicates whether the account has expired.
-     *
-     * Returning true means:
-     * - Account is valid and not expired.
-     */
+    // Indicates the account is not expired
     @Override
     public boolean isAccountNonExpired() {
         return true;
     }
 
-    /**
-     * Indicates whether the account is locked.
-     *
-     * Returning true means:
-     * - Account is not locked.
-     */
+    // Indicates the account is not locked
     @Override
     public boolean isAccountNonLocked() {
         return true;
     }
 
-    /**
-     * Indicates whether user credentials (password) are expired.
-     *
-     * Returning true means:
-     * - Credentials are valid.
-     */
+    // Indicates the credentials are valid and not expired
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
     }
 
-    /**
-     * Indicates whether the user is enabled.
-     *
-     * Returning true means:
-     * - User account is active.
-     */
+    // Indicates the user account is active
     @Override
     public boolean isEnabled() {
         return true;
